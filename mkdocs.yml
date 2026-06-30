@@ -1,0 +1,19 @@
+site_name: reshell
+site_description: The Portable Developer Terminal Manager
+site_author: aaryansinhaa
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: deep purple
+    accent: indigo
+  features:
+    - navigation.tabs
+    - navigation.sections
+
+nav:
+  - Welcome: index.md
+  - Getting Started: getting-started.md
+  - Snippets & Aliases: snippets-aliases.md
+  - Functions & Workflows: functions-scripts.md
+  - Package & Marketplace: package-marketplace.md
