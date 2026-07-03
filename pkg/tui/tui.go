@@ -31,6 +31,7 @@ const (
 	TabMarketplace
 	TabEnv
 	TabGit
+	TabProfiles
 )
 
 // Msg structures for async channels
@@ -81,12 +82,14 @@ type model struct {
 	scriptsData   []scripts.Script
 	workflowsData []config.Workflow
 	envData       []config.EnvVar
-	gitData       *git.GitConfig
-	gitCommits    []git.Commit
+	gitData        *git.GitConfig
+	gitCommits     []git.Commit
 	gitHistoryView bool
 	gitSelectedIdx int
-	packagesData  []string
-	pkgStatus     map[string]bool // pkg -> installed
+	profilesData   []string
+	activeProfile  string
+	packagesData   []string
+	pkgStatus      map[string]bool // pkg -> installed
 
 	// Interactive Input Forms
 	inputMode  bool
@@ -122,6 +125,7 @@ type model struct {
 	marketplace MarketplaceComponent
 	env         EnvComponent
 	git         GitComponent
+	profiles    ProfilesComponent
 	chrome      ChromeComponent
 }
 
@@ -155,6 +159,7 @@ func initialModel() model {
 		themeName:       theme,
 		userName:        userName,
 		preferredEditor: preferredEditor,
+		profiles:        ProfilesComponent{},
 	}
 
 	m.viewport.Style = lipgloss.NewStyle().
@@ -191,6 +196,8 @@ func (m model) maxListIndex() int {
 		return len(m.envData) - 1
 	case TabPackages:
 		return len(m.packagesData) - 1
+	case TabProfiles:
+		return len(m.profilesData) - 1
 	default:
 		return -1
 	}
@@ -268,11 +275,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "ctrl+c":
 				return m, tea.Quit
 			case "tab":
-				m.activeTab = (m.activeTab + 1) % 10
+				m.activeTab = (m.activeTab + 1) % 11
 				m.selectedIdx = 0
 				return m, nil
 			case "shift+tab":
-				m.activeTab = (m.activeTab - 1 + 10) % 10
+				m.activeTab = (m.activeTab - 1 + 11) % 11
 				m.selectedIdx = 0
 				return m, nil
 			case "ctrl+/", "ctrl+_":
@@ -334,12 +341,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "tab":
-			m.activeTab = (m.activeTab + 1) % 10
+			m.activeTab = (m.activeTab + 1) % 11
 			m.selectedIdx = 0
 			m.gitHistoryView = false
 
 		case "shift+tab":
-			m.activeTab = (m.activeTab - 1 + 10) % 10
+			m.activeTab = (m.activeTab - 1 + 11) % 11
 			m.selectedIdx = 0
 			m.gitHistoryView = false
 
@@ -457,7 +464,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 
-		case "r", "enter":
+		case "s":
+			if m.activeTab == TabProfiles && len(m.profilesData) > 0 {
+				selected := m.profilesData[m.selectedIdx]
+				err := config.SetActiveProfile(selected)
+				if err != nil {
+					m.showStatus(fmt.Sprintf("Failed to switch profile: %v", err), 3*time.Second)
+				} else {
+					m.loadData()
+					m.selectedIdx = 0
+					m.showStatus(fmt.Sprintf("Switched active profile to '%s'!", selected), 3*time.Second)
+					return m, m.applySettings()
+				}
+			}
+
+		case "r":
 			if m.activeTab == TabGit && m.gitHistoryView && len(m.gitCommits) > 0 {
 				selectedCommit := m.gitCommits[m.gitSelectedIdx]
 				err := git.RevertToCommit(selectedCommit.Hash)
@@ -466,6 +487,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.loadData()
 					m.showStatus(fmt.Sprintf("Reverted workspace to commit %s!", selectedCommit.Hash), 3*time.Second)
+					return m, m.applySettings()
+				}
+			}
+
+		case "enter":
+			if m.activeTab == TabGit && m.gitHistoryView && len(m.gitCommits) > 0 {
+				selectedCommit := m.gitCommits[m.gitSelectedIdx]
+				err := git.RevertToCommit(selectedCommit.Hash)
+				if err != nil {
+					m.showStatus(fmt.Sprintf("Revert failed: %v", err), 3*time.Second)
+				} else {
+					m.loadData()
+					m.showStatus(fmt.Sprintf("Reverted workspace to commit %s!", selectedCommit.Hash), 3*time.Second)
+					return m, m.applySettings()
+				}
+			} else if m.activeTab == TabProfiles && len(m.profilesData) > 0 {
+				selected := m.profilesData[m.selectedIdx]
+				err := config.SetActiveProfile(selected)
+				if err != nil {
+					m.showStatus(fmt.Sprintf("Failed to switch profile: %v", err), 3*time.Second)
+				} else {
+					m.loadData()
+					m.selectedIdx = 0
+					m.showStatus(fmt.Sprintf("Switched active profile to '%s'!", selected), 3*time.Second)
 					return m, m.applySettings()
 				}
 			}
@@ -510,6 +555,8 @@ func (m model) View() string {
 		right = m.env.View(m)
 	case TabGit:
 		right = m.git.View(m)
+	case TabProfiles:
+		right = m.profiles.View(m)
 	}
 
 	if m.inputMode {

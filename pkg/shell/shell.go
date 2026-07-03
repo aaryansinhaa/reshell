@@ -69,10 +69,6 @@ func Apply() error {
 		return fmt.Errorf("failed to load env vars: %w", err)
 	}
 
-	configDir, err := config.GetConfigDir()
-	if err != nil {
-		return err
-	}
 
 	// 2. Generate script content based on the active shell
 	var scriptBuilder strings.Builder
@@ -143,13 +139,21 @@ func Apply() error {
 		}
 	}
 
-	// 3. Write compilation file
+	// 3. Write compilation file to the global static path
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get home directory: %w", err)
+	}
+	baseDir := filepath.Join(home, ".config", "reshell")
+	_ = os.MkdirAll(filepath.Join(baseDir, "shell"), 0755)
+
 	var targetFile string
 	if shellName == "fish" {
-		targetFile = filepath.Join(configDir, "shell", "reshell.fish")
+		targetFile = filepath.Join(baseDir, "shell", "reshell.fish")
 	} else {
-		targetFile = filepath.Join(configDir, "shell", "reshell.sh")
+		targetFile = filepath.Join(baseDir, "shell", "reshell.sh")
 	}
+
 
 	err = os.WriteFile(targetFile, []byte(scriptBuilder.String()), 0644)
 	if err != nil {

@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pelletier/go-toml/v2"
 	"reshell/pkg/git"
@@ -82,14 +83,27 @@ type WorkflowConfig struct {
 	Workflows []Workflow `toml:"workflows"`
 }
 
-// GetConfigDir returns the default config directory path for reshell.
+// GetConfigDir returns the active config directory path for reshell.
 func GetConfigDir() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	dir := filepath.Join(home, ".config", "reshell")
-	return dir, nil
+	baseDir := filepath.Join(home, ".config", "reshell")
+
+	// Read active profile name
+	activeProfileFile := filepath.Join(baseDir, "active_profile.txt")
+	profileBytes, err := os.ReadFile(activeProfileFile)
+	if err != nil || len(strings.TrimSpace(string(profileBytes))) == 0 {
+		return baseDir, nil
+	}
+
+	profileName := strings.TrimSpace(string(profileBytes))
+	if profileName == "default" || profileName == "" {
+		return baseDir, nil
+	}
+
+	return filepath.Join(baseDir, "profiles", profileName), nil
 }
 
 // EnsureDirectories configures the directories required for reshell.

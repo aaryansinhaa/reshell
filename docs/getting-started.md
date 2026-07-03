@@ -114,3 +114,37 @@ reshell
 - `r` or `Enter` (inside Git history view): Revert configuration files to the selected revision.
 - `Ctrl+A`: Run `reshell apply` to compile and load configurations.
 - `q` or `Ctrl+C`: Exit the interface.
+
+---
+
+## Multi-Profile Workspaces
+
+reshell supports isolated workspaces through **Profiles**. Each profile maintains its own custom aliases, snippets, custom function scripts, scripts library, environment variables, workflows, and package lists.
+
+### Managing Profiles in TUI
+
+Navigate to the **Profiles** tab in the TUI dashboard:
+- **`s` or `Enter`**: Activates the highlighted profile and automatically compiles and updates your shell hooks (`reshell apply`).
+- **`n`**: Prompts you for a name to create and switch to a new profile.
+- **`d`**: Deletes the highlighted profile (you cannot delete the active profile).
+
+### Managing Profiles in CLI
+
+You can also control profiles directly from the command line:
+
+- **List profiles**:
+  ```bash
+  reshell profile list
+  ```
+- **Create profile**:
+  ```bash
+  reshell profile create work
+  ```
+- **Switch profile**:
+  ```bash
+  reshell profile switch work
+  ```
+- **Delete profile**:
+  ```bash
+  reshell profile delete work
+  ```

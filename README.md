@@ -89,6 +89,10 @@ The setup command installs the `reshell` executable to `~/.local/bin/` and regis
 | `reshell git apply` | Applies git profiles globally |
 | `reshell export <toml-path>` | Exports configurations into a single TOML manifest |
 | `reshell import <toml-path>` | Imports configurations from a TOML manifest |
+| `reshell profile list` | Lists all configuration profiles |
+| `reshell profile create <name>` | Creates a new isolated configuration profile |
+| `reshell profile switch <name>` | Switches active profile and recompiles hooks |
+| `reshell profile delete <name>` | Deletes an isolated configuration profile |
 
 ---
 
@@ -98,14 +102,20 @@ All configurations are stored in your home directory under `~/.config/reshell/`:
 
 ```text
 ~/.config/reshell/
-├── config.toml       # User info, preferred editor, packages, marketplace lists
-├── aliases.toml      # Active command aliases
-├── snippets.toml     # Script snippets & version history
-├── env.toml          # Environment variables
-├── workflows.toml    # Workflow definitions
-├── functions/        # Raw custom function scripts (.sh, .fish)
-├── scripts/          # Library scripts grouped by category
-└── logs/             # Workflow and script execution logs
+├── active_profile.txt  # Stores the currently active profile name
+├── config.toml         # User info, preferred editor, packages, marketplace lists
+├── aliases.toml        # Active command aliases
+├── snippets.toml       # Script snippets & version history
+├── env.toml            # Environment variables
+├── workflows.toml      # Workflow definitions
+├── functions/          # Raw custom function scripts (.sh, .fish)
+├── scripts/            # Library scripts grouped by category
+├── logs/               # Workflow and script execution logs
+└── profiles/           # Isolated custom profile folders (e.g. school/, work/, chill/)
+    └── school/
+        ├── config.toml
+        ├── aliases.toml
+        └── ...
 ```
 
 For comprehensive tutorials, setup guides, and marketplace documentation, refer to the [docs/](docs/) directory.

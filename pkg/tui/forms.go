@@ -7,9 +7,11 @@ import (
 	"reshell/pkg/config"
 	"reshell/pkg/env"
 	"reshell/pkg/packages"
+	"reshell/pkg/shell"
 	"reshell/pkg/snippets"
 	"reshell/pkg/workflows"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -90,6 +92,14 @@ func (m *model) initForm() {
 		m.formInputs = make([]textinput.Model, 1)
 		m.formInputs[0] = textinput.New()
 		m.formInputs[0].Placeholder = "Package Name (e.g. jq, ripgrep, tmux)"
+		m.formInputs[0].Focus()
+
+	case TabProfiles:
+		m.formType = "create_profile"
+		m.formTitle = "Create New Configuration Profile"
+		m.formInputs = make([]textinput.Model, 1)
+		m.formInputs[0] = textinput.New()
+		m.formInputs[0].Placeholder = "Profile Name (e.g. work, school, chill)"
 		m.formInputs[0].Focus()
 
 	default:
@@ -410,6 +420,18 @@ fi`,
 		name := m.formInputs[0].Value()
 		if name != "" {
 			_ = packages.Add(name)
+		}
+	case "create_profile":
+		name := m.formInputs[0].Value()
+		if name != "" {
+			err := config.CreateProfile(name)
+			if err != nil {
+				m.showStatus(fmt.Sprintf("Error creating profile: %v", err), 3*time.Second)
+			} else {
+				_ = config.SetActiveProfile(name)
+				_ = shell.Apply()
+				m.showStatus(fmt.Sprintf("Profile '%s' created and activated!", name), 3*time.Second)
+			}
 		}
 	case "env":
 		name := m.formInputs[0].Value()

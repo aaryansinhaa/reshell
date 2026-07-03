@@ -19,6 +19,7 @@ var tabNames = map[ActiveTab]string{
 	TabMarketplace: "Marketplace",
 	TabEnv:         "Environment",
 	TabGit:         "Git Config",
+	TabProfiles:    "Profiles",
 }
 
 type ChromeComponent struct{}
@@ -58,7 +59,7 @@ func (c ChromeComponent) HeaderView(m model) string {
 
 func (c ChromeComponent) SidebarView(m model, h int) string {
 	var tabs []string
-	for i := ActiveTab(0); i < 10; i++ {
+	for i := ActiveTab(0); i < 11; i++ {
 		name := tabNames[i]
 		if m.activeTab == i {
 			tabs = append(tabs, TabActiveStyle.Width(20).Render(" "+name))
@@ -96,6 +97,8 @@ func (c ChromeComponent) HelpView(m model) string {
 		} else {
 			keys = append(keys, "h: History view")
 		}
+	case TabProfiles:
+		keys = append(keys, "s/Enter: Activate profile", "n: Create profile", "d: Delete profile")
 	}
 
 	return HelpStyle.Width(m.width - 4).Render(strings.Join(keys, "  |  "))

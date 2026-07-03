@@ -546,6 +546,100 @@ func init() {
 		},
 	}
 
+	// --- profile subcommands ---
+	profileCmd := &cobra.Command{Use: "profile", Short: "Manage isolated configuration profiles"}
+
+	profileListCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List all configuration profiles",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			list, err := config.ListProfiles()
+			if err != nil {
+				return err
+			}
+			active, err := config.GetActiveProfile()
+			if err != nil {
+				return err
+			}
+			for _, p := range list {
+				if p == active {
+					fmt.Printf("- %s (active)\n", p)
+				} else {
+					fmt.Printf("- %s\n", p)
+				}
+			}
+			return nil
+		},
+	}
+
+	profileCreateCmd := &cobra.Command{
+		Use:   "create <name>",
+		Short: "Create a new configuration profile",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			name := args[0]
+			err := config.CreateProfile(name)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Profile '%s' created successfully.\n", name)
+			return nil
+		},
+	}
+
+	profileSwitchCmd := &cobra.Command{
+		Use:   "switch <name>",
+		Short: "Switch to a different configuration profile",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			name := args[0]
+			list, err := config.ListProfiles()
+			if err != nil {
+				return err
+			}
+			exists := false
+			for _, p := range list {
+				if p == name {
+					exists = true
+					break
+				}
+			}
+			if !exists {
+				return fmt.Errorf("profile '%s' does not exist", name)
+			}
+
+			err = config.SetActiveProfile(name)
+			if err != nil {
+				return err
+			}
+
+			// Compile new profile hooks
+			if err := shell.Apply(); err != nil {
+				return fmt.Errorf("failed to compile configurations for profile '%s': %w", name, err)
+			}
+
+			fmt.Printf("Switched active profile to '%s'. Restart your terminal or source your profile to apply changes.\n", name)
+			return nil
+		},
+	}
+
+	profileDeleteCmd := &cobra.Command{
+		Use:   "delete <name>",
+		Short: "Delete a configuration profile",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			name := args[0]
+			err := config.DeleteProfile(name)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Profile '%s' deleted successfully.\n", name)
+			return nil
+		},
+	}
+
+	profileCmd.AddCommand(profileListCmd, profileCreateCmd, profileSwitchCmd, profileDeleteCmd)
+
 	// Add commands to rootCmd
 	rootCmd.AddCommand(
 		applyCmd,
@@ -562,5 +656,6 @@ func init() {
 		gitCmd,
 		exportCmd,
 		importCmd,
+		profileCmd,
 	)
 }

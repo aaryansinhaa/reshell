@@ -188,6 +188,13 @@ func (m *model) deleteSelected() {
 	case TabPackages:
 		selected := m.packagesData[m.selectedIdx]
 		_ = packages.Remove(selected)
+	case TabProfiles:
+		selected := m.profilesData[m.selectedIdx]
+		err := config.DeleteProfile(selected)
+		if err != nil {
+			m.showStatus(fmt.Sprintf("Error: %v", err), 3*time.Second)
+			return
+		}
 	}
 
 	if m.selectedIdx > 0 {
@@ -434,6 +441,12 @@ func (m *model) loadData() {
 	}
 	if history, err := git.GetHistory(); err == nil {
 		m.gitCommits = history
+	}
+	if pList, err := config.ListProfiles(); err == nil {
+		m.profilesData = pList
+	}
+	if activeP, err := config.GetActiveProfile(); err == nil {
+		m.activeProfile = activeP
 	}
 
 	for _, pkg := range m.packagesData {
