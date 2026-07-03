@@ -22,6 +22,7 @@ packages = [
 
 ### Dashboard Package Management
 Navigate to the **Packages** tab in the dashboard to manage system requirements:
+
 - **Add (`n`)**: Appends a package name to `config.toml`.
 - **Remove (`d`)**: Removes a package name from the configuration list.
 - **Uninstall (`u`)**: Asynchronously removes the highlighted package from your host system.
@@ -30,6 +31,7 @@ Navigate to the **Packages** tab in the dashboard to manage system requirements:
 ### Privilege Elevation (sudo)
 
 For package operations requiring administrative privileges (e.g., `apt-get`, `pacman`):
+
 - reshell prompts you for your password inside the dashboard.
 - The password is piped to `sudo -S` standard input to execute the installation asynchronously.
 - The process streams command outputs directly to the dashboard log viewport.
