@@ -1,5 +1,7 @@
 # reshell Documentation
 
+[![GitHub stars](https://img.shields.io/github/stars/aaryansinhaa/reshell?style=social)](https://github.com/aaryansinhaa/reshell)
+
 Welcome to the reshell documentation. reshell is a portable configuration and command-line workspace manager for developers.
 
 reshell centralizes your shell configurations, including environment variables, command aliases, script snippets, custom shell functions, system packages, and git profiles into a single, version-controlled configuration directory.

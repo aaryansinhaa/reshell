@@ -1,6 +1,8 @@
 site_name: reshell
 site_description: The Portable Developer Terminal Manager
 site_author: aaryansinhaa
+repo_url: https://github.com/aaryansinhaa/reshell
+repo_name: aaryansinhaa/reshell
 theme:
   name: material
   palette:
