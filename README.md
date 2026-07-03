@@ -1,34 +1,55 @@
-# ⚒️ reshell
+# reshell
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/aaryansinhaa/reshell?color=00ADD8)](https://go.dev/)
 [![License](https://img.shields.io/github/license/aaryansinhaa/reshell?color=brightgreen)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/aaryansinhaa/reshell/actions)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet.svg)](https://github.com/aaryansinhaa/reshell/pulls)
 
-**reshell** is a modern, reproducible, and highly portable developer environment and command-line workspace manager written in Go. It provides both a powerful command-line interface (`reshell`) and a premium, fully translucent Terminal User Interface (TUI) dashboard built using the Charmbracelet Bubble Tea framework.
-
-With `reshell`, you can easily configure, track, and synchronize your command aliases, script snippets, custom shell functions, environment variables, system packages, and git configurations in a single version-controlled location.
+reshell is a portable developer environment and command-line workspace manager. It provides a terminal dashboard to configure, track, and synchronize aliases, script snippets, shell functions, environment variables, system packages, and git configurations from a single, version-controlled configuration directory.
 
 ---
 
-## 🚀 Key Features
+## Tech Stack
 
-* 📊 **Unified Translucent TUI Dashboard**: A premium, blur-through terminal user interface that seamlessly integrates with your terminal emulator's background settings.
-* ✍️ **First-Time Setup Wizard**: Automatic welcome onboarding that detects your installed text editors (`nvim`, `vim`, `code`, `micro`, `nano`, etc.) and guides you to configure your workspace preferences.
-* 🎨 **Syntax Highlighting**: Real-time syntax highlighting for scripts, functions, snippets, and TOML templates powered by the Chroma rendering engine.
-* 🔄 **Workspace Setup Generator**: Build customizable, multi-step workspace setup workflows. Minimize unrelated open windows, load your project directories, and launch default web browser links (Linear, Jira, Spotify, etc.) automatically.
-* 📦 **System Package Manager**: Asynchronously installs and uninstalls package requirements across Linux (APT, DNF, Pacman), macOS (Homebrew), and Windows (Winget, Chocolatey) with secure sudo password redirection.
-* 🏷️ **Smart Shell Hook Compiler**: Compiles all configurations dynamically and hooks them into your `.bashrc`, `.zshrc`, or `config.fish` profile without modifying files manually.
-* 🔑 **Environment & Git Profiles**: Keep track of environment paths and Git profiles globally.
-* 📤 **Portable Configurations**: Export or import your entire developer setup as a single TOML manifest or ZIP file for instant machine bootstrap.
+- **Language**: Go (1.22+)
+- **Terminal User Interface**: Charm Bubble Tea (MVU framework) & Lipgloss
+- **Syntax Highlighting**: Chroma rendering engine
+- **Supported Shells**: Bash, Zsh, Fish
+- **Supported Package Managers**: APT, DNF, Pacman, Homebrew, Winget, Chocolatey
 
 ---
 
-## 🛠️ Installation & Bootstrapping
+## System Architecture
+
+```mermaid
+graph TD
+    User([User]) -->|Interact / Edit| TUI[reshell TUI Dashboard]
+    TUI -->|Save Config| ConfigDir[~/.config/reshell/*.toml]
+    CLI[reshell CLI / apply] -->|Read Config| ConfigDir
+    CLI -->|Compile| OutScript[~/.config/reshell/shell/reshell.sh/fish]
+    ShellProfile[Shell Profile: .bashrc / .zshrc / config.fish] -->|Sources on Startup| OutScript
+    OutScript -->|Inject Context| ParentShell[Parent Shell Environment]
+```
+
+---
+
+## Features
+
+- **CLI Dashboard**: Terminal user interface for managing configurations.
+- **Setup Wizard**: Detects installed text editors (Neovim, VS Code, Nano, etc.) to set editor preferences automatically.
+- **Syntax Highlighting**: Real-time rendering for scripts, custom functions, and TOML templates.
+- **Workspace Workflows**: Non-blocking, multi-step command and browser automation routines.
+- **Cross-Platform Package Manager**: Asynchronously installs and uninstalls host packages on Linux, macOS, and Windows with secure sudo password piping.
+- **Shell Compiler**: Generates optimized setup scripts and automatically registers startup hooks in `.bashrc`, `.zshrc`, or `config.fish`.
+- **Portable Configurations**: Import or export configuration directories as a single TOML manifest or ZIP file.
+
+---
+
+## Installation & Setup
 
 ### Prerequisites
-* Go `1.22` or higher
-* Git
+- Go 1.22 or higher
+- Git
 
 ### Build from Source
 ```bash
@@ -37,16 +58,16 @@ cd reshell
 go build -o reshell
 ```
 
-### Onboarding Setup
-Configure global binary path hooks and profile integrations automatically with the setup command:
+### Setup
+Configure global binary path hooks and profile integrations:
 ```bash
 ./reshell setup
 ```
-This script copy-installs the `reshell` executable into your local user path (`~/.local/bin/`), registers path variables, and injects shell hook integrations. Simply open a new terminal window to begin using `reshell` globally!
+The setup command installs the `reshell` executable to `~/.local/bin/` and registers the startup hooks in your shell profile.
 
 ---
 
-## 🕹️ CLI Command Quick Reference
+## Command Reference
 
 | Command | Action |
 | :--- | :--- |
@@ -70,7 +91,7 @@ This script copy-installs the `reshell` executable into your local user path (`~
 
 ---
 
-## 📂 Configuration Architecture
+## Configuration Architecture
 
 All configurations are stored in your home directory under `~/.config/reshell/`:
 
@@ -87,3 +108,9 @@ All configurations are stored in your home directory under `~/.config/reshell/`:
 ```
 
 For comprehensive tutorials, setup guides, and marketplace documentation, refer to the [docs/](docs/) directory.
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
