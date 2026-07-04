@@ -9,6 +9,42 @@ reshell is a portable developer environment and command-line workspace manager. 
 
 ---
 
+## Environment Bootstrapping
+
+Setting up a new machine or server environment often requires hours of copying dotfiles, writing custom shell scripts, and installing dependencies individually. 
+
+`reshell` automates this process into a single command. By importing pre-configured workspace packs from the marketplace or any Git repository, you can configure aliases, environment variables, custom helper scripts, and system package dependencies instantly.
+
+### Example: Java Developer Workspace
+
+To install a complete developer environment:
+
+```bash
+reshell install github.com/aaryansinhaa/reshell-java
+```
+
+Under the hood, this command:
+1. Clones the remote repository and parses the `reshell.toml` manifest.
+2. Merges development configurations:
+   * **Aliases**: Binds shortcuts like `jrun` (`java -jar`).
+   * **Environment Variables**: Sets paths like `JAVA_HOME`.
+   * **Code Snippets**: Adds helper commands like `mvn-clean-install`.
+   * **Custom Functions**: Copies shell functions to `~/.config/reshell/functions/`.
+3. Appends required packages to the configuration manifest:
+   ```toml
+   packages = ["openjdk-17-jdk", "maven", "gradle"]
+   ```
+
+To install the missing dependencies and apply the configurations:
+
+```bash
+reshell install
+```
+
+`reshell` detects the host package manager (`apt`, `brew`, `dnf`, `pacman`, `winget`), prompts for administrative elevation if required, and installs the dependencies asynchronously.
+
+---
+
 ## Tech Stack
 
 - **Language**: Go (1.22+)
