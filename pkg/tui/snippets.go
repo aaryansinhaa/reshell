@@ -66,7 +66,7 @@ func (s SnippetsComponent) View(m model) string {
 			selected.Language,
 			selected.Shell,
 			tagsStr,
-			HighlightCode(selected.Code, selected.Language),
+			GetTruncatedCodeBlock(selected.Code, selected.Language, 10),
 		)
 
 		previewCard := CardStyle.Width(cardWidth).Render(preview)

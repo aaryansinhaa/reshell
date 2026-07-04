@@ -90,15 +90,16 @@ func (s SearchComponent) View(m model) string {
 		}
 
 		lexer := "bash"
-		if selected.Type == "Snippet" {
-			lexer = "bash"
+		if selected.Type == "Snippet" && selected.OriginalIdx < len(m.snippetsData) {
+			lexer = m.snippetsData[selected.OriginalIdx].Language
 		}
+
 		preview := fmt.Sprintf("%s %s\n%s\n\n%s\n\nContent / Command / Path:\n%s",
 			lipgloss.NewStyle().Foreground(PurpleColor).Bold(true).Render(selected.Type+":"),
 			TitleStyle.Render(selected.Name),
 			TextMuted.Render(selected.Description),
 			SuccessLabel.Render(actionHint),
-			HighlightCode(selected.Value, lexer),
+			GetTruncatedCodeBlock(selected.Value, lexer, 10),
 		)
 
 		previewCard := CardStyle.Width(cardWidth).Render(preview)

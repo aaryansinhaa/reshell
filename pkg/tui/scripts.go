@@ -58,7 +58,7 @@ func (s ScriptsComponent) View(m model) string {
 			TextMuted.Render(selected.Description),
 			selected.Parameters,
 			selected.Path,
-			HighlightCode(code, "bash"),
+			GetTruncatedCodeBlock(code, "bash", 10),
 		)
 
 		previewCard := CardStyle.Width(cardWidth).Render(preview)

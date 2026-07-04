@@ -104,7 +104,7 @@ func (m *model) editSelected() tea.Cmd {
 			return nil
 		}
 		selected := m.snippetsData[m.selectedIdx]
-		tempFile := filepath.Join(os.TempDir(), fmt.Sprintf("reshell-snippet-%s.sh", selected.Name))
+		tempFile := filepath.Join(os.TempDir(), fmt.Sprintf("reshell-snippet-%s.txt", selected.Name))
 		_ = os.WriteFile(tempFile, []byte(selected.Code), 0644)
 
 		editor := m.getPreferredEditor()

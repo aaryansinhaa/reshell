@@ -59,7 +59,7 @@ func (f FunctionsComponent) View(m model) string {
 			preview = fmt.Sprintf("%s (extension %s)\n\n%s",
 				TitleStyle.Render("Function: "+selected),
 				ext,
-				HighlightCode(code, "bash"),
+				GetTruncatedCodeBlock(code, "bash", 10),
 			)
 		}
 

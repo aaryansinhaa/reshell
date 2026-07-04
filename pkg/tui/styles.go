@@ -2,6 +2,8 @@ package tui
 
 import (
 	"bytes"
+	"fmt"
+	"strings"
 
 	"github.com/alecthomas/chroma/v2/quick"
 	"github.com/charmbracelet/lipgloss"
@@ -200,4 +202,18 @@ func HighlightCode(code, lexer string) string {
 		return code
 	}
 	return buf.String()
+}
+
+func GetTruncatedCodeBlock(code, lexer string, maxLines int) string {
+	highlighted := HighlightCode(code, lexer)
+	lines := strings.Split(highlighted, "\n")
+	totalLines := len(lines)
+	if totalLines <= maxLines {
+		return highlighted
+	}
+
+	truncatedLines := lines[:maxLines]
+	joined := strings.Join(truncatedLines, "\n")
+	notice := "\n" + TextMuted.Render(fmt.Sprintf("... (truncated, %d lines remaining. Press Enter to edit/copy)", totalLines-maxLines))
+	return joined + notice
 }
