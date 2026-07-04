@@ -84,9 +84,15 @@ graph TD
 
 ## Installation & Setup
 
-### Prerequisites
-- Go 1.22 or higher
-- Git
+### Run via Docker (Sandbox Demo)
+
+For testing or running ReShell in an isolated sandbox without affecting your host system, you can use the pre-built Docker image hosted on GitHub Container Registry:
+
+```bash
+docker run -it ghcr.io/aaryansinhaa/reshell:latest
+```
+
+This starts an interactive Ubuntu container with `reshell` pre-installed, a default non-root user (`developer`), and common shell dependencies configured.
 
 ### Build from Source
 ```bash

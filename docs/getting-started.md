@@ -12,6 +12,16 @@ This guide covers requirements, installation, shell profile integration, and imp
 
 ## Installation & Setup
 
+### Run via Docker (Sandbox Demo)
+
+For testing or running ReShell in an isolated sandbox without affecting your host system, you can use the pre-built Docker image hosted on GitHub Container Registry:
+
+```bash
+docker run -it ghcr.io/aaryansinhaa/reshell:latest
+```
+
+### Build from Source
+
 Build the binary from the repository root:
 
 ```bash
@@ -69,7 +79,7 @@ To prevent configuration drift, you can export and import your workspace configu
 
 reshell uses a **Last-Write-Wins (LWW)** conflict resolution policy when merging configurations:
 - **Manifest Imports (`reshell import`)**: Overwrites the existing local configurations with the contents of the imported TOML manifest file.
-- **Marketplace Packs (`reshell install`)**: Merges configurations item-by-item. If an imported alias, environment variable, or snippet matches an existing local key, the imported value overwrites the local one.
+- **Marketplace Packs (`reshell install`)**: Fetches the configuration pack manifest, presents a summary breakdown of all environment variables, aliases, snippets, custom functions, and library scripts to be installed, warns about running third-party scripts, and prompts for confirmation before merging. Merges are performed item-by-item. If an imported alias, environment variable, or snippet matches an existing local key, the imported value overwrites the local one.
 - **Git Version Control**: Since reshell automatically commits all changes under `~/.config/reshell/`, you can inspect diffs and resolve conflicts or revert undesired overwrites using standard Git command-line tools.
 
 ### Exporting Configurations
