@@ -106,11 +106,17 @@ go build -o reshell
 ```
 
 ### Setup
-Configure global binary path hooks and profile integrations:
+Configure global binary path hooks, profile integrations, and automatically import configurations:
 ```bash
-./reshell setup
+./reshell setup [directory_path]
 ```
-The setup command installs the `reshell` executable to `~/.local/bin/` and registers the startup hooks in your shell profile.
+The setup command:
+1. Installs the `reshell` executable to `~/.local/bin/` and registers startup hooks in your shell profile.
+2. Prompts you to select or create a target configuration profile (default: `default`).
+3. Auto-discovers and imports configurations:
+   - If `directory_path` is provided, scans that folder recursively.
+   - If no path is provided, scans default system shell profiles (`~/.bashrc`, `~/.zshrc`, `~/.profile`, etc.), recursively scans `~/.config` (skipping large folders), global VS Code user snippets, and Pet TOML configuration files.
+4. Performs interactive de-duplication, conflict resolution (allowing you to choose between overriding, keeping existing, renaming, or skipping), and secure secret detection (skipped by default).
 
 ---
 
@@ -121,7 +127,7 @@ The setup command installs the `reshell` executable to `~/.local/bin/` and regis
 | `reshell` | Launches the interactive TUI Dashboard |
 | `reshell apply` | Compiles your active configurations and sources them |
 | `reshell clean` | Removes reshell's integration blocks from your shell profile |
-| `reshell setup` | Installs reshell binary globally and bootstraps configurations |
+| `reshell setup [dir]` | Installs reshell binary globally and auto-imports dotfiles/configs |
 | `reshell alias add <name> <value> [desc]` | Registers a command alias |
 | `reshell snippet add <name> <code> [desc]` | Stores a code block snippet |
 | `reshell snippet copy <name>` | Copies snippet contents to your clipboard |

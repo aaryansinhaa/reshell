@@ -554,7 +554,7 @@ func init() {
 
 	// --- setup/bootstrap command ---
 	setupCmd := &cobra.Command{
-		Use:     "setup",
+		Use:     "setup [directory_path]",
 		Aliases: []string{"bootstrap", "install-self"},
 		Short:   "Install reshell binary globally and bootstrap shell configurations",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -563,6 +563,277 @@ func init() {
 				return err
 			}
 
+			// 1. Prompt for profile name
+			var profileName string
+			fmt.Print("Enter profile name to import configurations into (default: \"default\"): ")
+			_, _ = fmt.Scanln(&profileName)
+			profileName = strings.TrimSpace(profileName)
+			if profileName == "" {
+				profileName = "default"
+			}
+
+			// Check if profile exists, if not create it
+			profiles, err := config.ListProfiles()
+			if err == nil {
+				exists := false
+				for _, p := range profiles {
+					if p == profileName {
+						exists = true
+						break
+					}
+				}
+				if !exists && profileName != "default" {
+					if err := config.CreateProfile(profileName); err != nil {
+						return fmt.Errorf("failed to create profile %q: %w", profileName, err)
+					}
+				}
+			}
+			if err := config.SetActiveProfile(profileName); err != nil {
+				return fmt.Errorf("failed to activate profile %q: %w", profileName, err)
+			}
+
+			// 2. Scan targets
+			var scanResults config.DiscoveryResults
+			var scanErr error
+			if len(args) > 0 {
+				fmt.Printf("Scanning directory '%s' recursively for configurations...\n", args[0])
+				scanResults, scanErr = config.WalkAndParse(args[0])
+			} else {
+				fmt.Println("No directory specified. Scanning default system profiles and ~/.config...")
+				scanResults, scanErr = config.DiscoverDefault(home)
+			}
+			if scanErr != nil {
+				return fmt.Errorf("failed to scan for configurations: %w", scanErr)
+			}
+
+			// 3. Load active config files for merging
+			activeAliases, err := config.LoadAliases()
+			if err != nil {
+				return err
+			}
+			activeEnv, err := config.LoadEnv()
+			if err != nil {
+				return err
+			}
+			activeSnippets, err := config.LoadSnippets()
+			if err != nil {
+				return err
+			}
+
+			var importedAliasesCount int
+			var importedEnvCount int
+			var importedFuncsCount int
+			var importedSnippetsCount int
+			var skippedSecretsCount int
+
+			// Merge Aliases
+			existingAliases := make(map[string]config.Alias)
+			for _, al := range activeAliases.Aliases {
+				existingAliases[al.Name] = al
+			}
+
+			for _, parsed := range scanResults.Aliases {
+				existing, found := existingAliases[parsed.Name]
+				if !found {
+					activeAliases.Aliases = append(activeAliases.Aliases, config.Alias{
+						Name:        parsed.Name,
+						Value:       parsed.Value,
+						Description: fmt.Sprintf("Imported from %s", filepath.Base(parsed.Source)),
+						Shell:       "all",
+						Enabled:     true,
+					})
+					existingAliases[parsed.Name] = config.Alias{Name: parsed.Name, Value: parsed.Value}
+					importedAliasesCount++
+				} else {
+					if existing.Value != parsed.Value {
+						choice := resolveConflict("alias", parsed.Name, existing.Value, parsed.Value, "active profile config", filepath.Base(parsed.Source))
+						switch choice {
+						case 2: // override
+							for i, al := range activeAliases.Aliases {
+								if al.Name == parsed.Name {
+									activeAliases.Aliases[i].Value = parsed.Value
+									activeAliases.Aliases[i].Description = fmt.Sprintf("Imported from %s (overwrote previous)", filepath.Base(parsed.Source))
+									break
+								}
+							}
+							importedAliasesCount++
+						case 3: // rename
+							newName := promptRename("alias")
+							activeAliases.Aliases = append(activeAliases.Aliases, config.Alias{
+								Name:        newName,
+								Value:       parsed.Value,
+								Description: fmt.Sprintf("Imported from %s (renamed from %s)", filepath.Base(parsed.Source), parsed.Name),
+								Shell:       "all",
+								Enabled:     true,
+							})
+							importedAliasesCount++
+						}
+					}
+				}
+			}
+			if err := config.SaveAliases(activeAliases); err != nil {
+				return err
+			}
+
+			// Merge Environment Variables
+			existingEnv := make(map[string]config.EnvVar)
+			for _, v := range activeEnv.Variables {
+				existingEnv[v.Name] = v
+			}
+
+			for _, parsed := range scanResults.EnvVars {
+				// Check for secrets
+				if config.IsSecret(parsed.Name, parsed.Value) {
+					fmt.Printf("\n[WARNING] Potential secret detected in environment variable %q:\n", parsed.Name)
+					fmt.Println("  (Note: Although reshell's Git repository is purely local and never pushed to any remote, plaintext storage is discouraged.)")
+					fmt.Println("  1) Skip importing (keep in original profile) [Recommended]")
+					fmt.Println("  2) Import in plaintext anyway")
+					var choice int
+					for {
+						fmt.Print("Select choice (1-2): ")
+						_, scanErr := fmt.Scanln(&choice)
+						if scanErr == nil && (choice == 1 || choice == 2) {
+							break
+						}
+						if scanErr != nil {
+							if scanErr.Error() == "EOF" {
+								choice = 1 // default to skip
+								break
+							}
+							// Clear buffer
+							var discard string
+							_, _ = fmt.Scanln(&discard)
+						}
+						fmt.Println("Invalid choice. Enter 1 or 2.")
+					}
+					if choice == 1 {
+						skippedSecretsCount++
+						continue
+					}
+				}
+
+				existing, found := existingEnv[parsed.Name]
+				if !found {
+					activeEnv.Variables = append(activeEnv.Variables, config.EnvVar{
+						Name:        parsed.Name,
+						Value:       parsed.Value,
+						Description: fmt.Sprintf("Imported from %s", filepath.Base(parsed.Source)),
+						Enabled:     true,
+					})
+					existingEnv[parsed.Name] = config.EnvVar{Name: parsed.Name, Value: parsed.Value}
+					importedEnvCount++
+				} else {
+					if existing.Value != parsed.Value {
+						choice := resolveConflict("environment variable", parsed.Name, existing.Value, parsed.Value, "active profile config", filepath.Base(parsed.Source))
+						switch choice {
+						case 2: // override
+							for i, ev := range activeEnv.Variables {
+								if ev.Name == parsed.Name {
+									activeEnv.Variables[i].Value = parsed.Value
+									activeEnv.Variables[i].Description = fmt.Sprintf("Imported from %s (overwrote previous)", filepath.Base(parsed.Source))
+									break
+								}
+							}
+							importedEnvCount++
+						case 3: // rename
+							newName := promptRename("environment variable")
+							activeEnv.Variables = append(activeEnv.Variables, config.EnvVar{
+								Name:        newName,
+								Value:       parsed.Value,
+								Description: fmt.Sprintf("Imported from %s (renamed from %s)", filepath.Base(parsed.Source), parsed.Name),
+								Enabled:     true,
+							})
+							importedEnvCount++
+						}
+					}
+				}
+			}
+			if err := config.SaveEnv(activeEnv); err != nil {
+				return err
+			}
+
+			// Merge Snippets
+			existingSnippets := make(map[string]config.Snippet)
+			for _, s := range activeSnippets.Snippets {
+				existingSnippets[s.Name] = s
+			}
+
+			for _, parsed := range scanResults.Snippets {
+				existing, found := existingSnippets[parsed.Name]
+				if !found {
+					activeSnippets.Snippets = append(activeSnippets.Snippets, config.Snippet{
+						Name:        parsed.Name,
+						Code:        parsed.Code,
+						Description: parsed.Description,
+						Tags:        parsed.Tags,
+						Shell:       "all",
+						Favorite:    false,
+					})
+					existingSnippets[parsed.Name] = config.Snippet{Name: parsed.Name, Code: parsed.Code}
+					importedSnippetsCount++
+				} else {
+					if existing.Code != parsed.Code {
+						choice := resolveConflict("snippet", parsed.Name, existing.Code, parsed.Code, "active profile config", filepath.Base(parsed.Source))
+						switch choice {
+						case 2: // override
+							for i, s := range activeSnippets.Snippets {
+								if s.Name == parsed.Name {
+									activeSnippets.Snippets[i].Code = parsed.Code
+									activeSnippets.Snippets[i].Description = parsed.Description
+									break
+								}
+							}
+							importedSnippetsCount++
+						case 3: // rename
+							newName := promptRename("snippet")
+							activeSnippets.Snippets = append(activeSnippets.Snippets, config.Snippet{
+								Name:        newName,
+								Code:        parsed.Code,
+								Description: parsed.Description,
+								Tags:        parsed.Tags,
+								Shell:       "all",
+								Favorite:    false,
+							})
+							importedSnippetsCount++
+						}
+					}
+				}
+			}
+			if err := config.SaveSnippets(activeSnippets); err != nil {
+				return err
+			}
+
+			// Merge Functions
+			existingFuncsList, _ := functions.List()
+			existingFuncs := make(map[string]bool)
+			for _, fName := range existingFuncsList {
+				existingFuncs[fName] = true
+			}
+
+			for _, parsed := range scanResults.Functions {
+				_, found := existingFuncs[parsed.Name]
+				if !found {
+					_ = functions.CreateOrUpdate(parsed.Name, parsed.Code)
+					existingFuncs[parsed.Name] = true
+					importedFuncsCount++
+				} else {
+					existingCode, _, err := functions.Get(parsed.Name)
+					if err == nil && strings.TrimSpace(existingCode) != strings.TrimSpace(parsed.Code) {
+						choice := resolveConflict("function", parsed.Name, existingCode, parsed.Code, "active profile config", filepath.Base(parsed.Source))
+						switch choice {
+						case 2: // override
+							_ = functions.CreateOrUpdate(parsed.Name, parsed.Code)
+							importedFuncsCount++
+						case 3: // rename
+							newName := promptRename("function")
+							_ = functions.CreateOrUpdate(newName, parsed.Code)
+							importedFuncsCount++
+						}
+					}
+				}
+			}
+
+			// Standard Setup steps:
 			localBin := filepath.Join(home, ".local", "bin")
 			if err := os.MkdirAll(localBin, 0755); err != nil {
 				return fmt.Errorf("failed to create local bin directory: %w", err)
@@ -575,7 +846,6 @@ func init() {
 
 			targetPath := filepath.Join(localBin, "reshell")
 
-			// Check if source and destination are the same file
 			cleanExe, err := filepath.EvalSymlinks(exePath)
 			if err != nil {
 				cleanExe = filepath.Clean(exePath)
@@ -587,14 +857,10 @@ func init() {
 
 			if cleanExe != cleanTarget {
 				fmt.Printf("reshell: Copying binary to '%s'...\n", targetPath)
-
-				// Remove existing target to avoid 'text file busy' errors
 				_ = os.Remove(targetPath)
-
 				if err := shell.CopyFile(exePath, targetPath); err != nil {
 					return fmt.Errorf("failed to copy executable: %w", err)
 				}
-
 				if err := os.Chmod(targetPath, 0755); err != nil {
 					return fmt.Errorf("failed to set executable permissions: %w", err)
 				}
@@ -602,12 +868,10 @@ func init() {
 				fmt.Println("reshell: Binary is already installed in the target directory.")
 			}
 
-			// Add localBin to PATH config
 			if err := env.AddDirToPath(localBin); err != nil {
 				return fmt.Errorf("failed to add local bin to PATH: %w", err)
 			}
 
-			// Apply configurations
 			if err := shell.Apply(); err != nil {
 				return fmt.Errorf("failed to apply shell configurations: %w", err)
 			}
@@ -615,6 +879,12 @@ func init() {
 			fmt.Println("\n+--------------------------------------------------------------+")
 			fmt.Println("|            reshell SETUP COMPLETED SUCCESSFULLY!              |")
 			fmt.Println("+--------------------------------------------------------------+")
+			fmt.Printf(" Target Profile:     %s\n", profileName)
+			fmt.Printf(" Import Summary:\n")
+			fmt.Printf("   - Aliases:        %d imported\n", importedAliasesCount)
+			fmt.Printf("   - Env Variables:  %d imported (skipped %d secrets)\n", importedEnvCount, skippedSecretsCount)
+			fmt.Printf("   - Custom Funcs:   %d imported\n", importedFuncsCount)
+			fmt.Printf("   - Code Snippets:  %d imported\n", importedSnippetsCount)
 			fmt.Printf(" Binary installed to: %s\n", targetPath)
 			fmt.Println(" Directory added to: reshell PATH variables")
 			fmt.Println(" Shell integration hooks applied to active shell profile.")
@@ -735,4 +1005,47 @@ func init() {
 		importCmd,
 		profileCmd,
 	)
+}
+
+func resolveConflict(itemType, name, oldVal, newVal, oldSrc, newSrc string) int {
+	fmt.Printf("\nConflict detected for %s %q:\n", itemType, name)
+	fmt.Printf("  1) Keep existing value: %q (from %s)\n", oldVal, oldSrc)
+	fmt.Printf("  2) Override with new value:  %q (from %s)\n", newVal, newSrc)
+	fmt.Printf("  3) Keep both (rename the new one)\n")
+	fmt.Printf("  4) Skip this import\n")
+	for {
+		fmt.Print("Select choice (1-4): ")
+		var choice int
+		_, err := fmt.Scanln(&choice)
+		if err == nil && choice >= 1 && choice <= 4 {
+			return choice
+		}
+		if err != nil {
+			if err.Error() == "EOF" {
+				return 4 // Skip on EOF
+			}
+			// Clear stdin buffer on error
+			var discard string
+			_, _ = fmt.Scanln(&discard)
+		}
+		fmt.Println("Invalid choice. Please enter a number between 1 and 4.")
+	}
+}
+
+func promptRename(itemType string) string {
+	for {
+		fmt.Printf("Enter new name for the %s: ", itemType)
+		var newName string
+		_, err := fmt.Scanln(&newName)
+		if err != nil {
+			if err.Error() == "EOF" {
+				return "imported-" + itemType
+			}
+		}
+		newName = strings.TrimSpace(newName)
+		if err == nil && newName != "" {
+			return newName
+		}
+		fmt.Println("Invalid name. Please try again.")
+	}
 }
