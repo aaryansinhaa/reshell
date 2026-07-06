@@ -21,6 +21,7 @@ reshell snippet add <name> <code> [description] [--tags <tags>] [--lang <languag
 ```
 
 Options:
+
 - `-t, --tags`: Comma-separated tags (e.g. `--tags "docker,infra"`).
 - `-l, --lang`: Programming/scripting language (lexer syntax) of the snippet (e.g. `--lang "python"`). Defaults to `bash`. If an unrecognized language is entered, a warning is printed and it falls back to `bash`.
 
