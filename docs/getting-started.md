@@ -28,13 +28,20 @@ Build the binary from the repository root:
 go build -o reshell
 ```
 
-Initialize the global configuration, install the binary, and inject startup hooks:
+Initialize the global configuration, install the binary, inject startup hooks, and auto-discover/import configurations:
 
 ```bash
-./reshell setup
+./reshell setup [directory_path]
 ```
 
-The `setup` command automatically copy-installs the `reshell` executable into your local user path (`~/.local/bin/`), registers the path variables, and injects the shell hook integrations. Open a new terminal window to begin using `reshell` globally.
+The `setup` command:
+1. Copy-installs the `reshell` executable into your local user path (`~/.local/bin/`), registers path variables, and injects shell hook integrations.
+2. Prompts you for a target profile name (defaults to `default`). If the profile does not exist, it will be created.
+3. Auto-discovers and imports configurations:
+   - **Default (No path)**: Automatically scans default home shell profiles (`~/.bashrc`, `~/.zshrc`, `.profile`, `.bash_aliases`, `config.fish`), your `~/.config` folder (excluding cache/tmp/node_modules), global VS Code user snippets, and Pet manager TOML files (`pet.toml`, `snippet.toml`).
+   - **Specific Path**: Recursively scans the provided directory path (highly recommended for dotfiles repositories).
+4. Prompts you interactively if conflicts are found (e.g., if different alias definitions exist in different files). You can choose to override, keep existing, keep both (by renaming), or skip.
+5. Automatically detects secrets (e.g., tokens, credentials, AWS keys) and skips them by default to protect your plaintext configuration. (Note: Although `reshell`'s Git history is purely local, skipping secrets keeps your environment safe).
 
 ---
 

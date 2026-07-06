@@ -45,5 +45,24 @@ We use a compiler-injector model to bind configurations to the active terminal:
    - It includes a prominent ASCII warning block advising developers not to modify the block manually, as `reshell` rebuilds or replaces it dynamically during `apply` or `clean` operations.
 
 3. **Subshell Execution & Context Limitations**:
-   - Because commands run as subprocesses in Go cannot modify the environment of the parent shell, commands like changing directories (`cd`) or setting temporary environment variables cannot be executed directly by invoking `reshell`.
    - Sourcing is used to bypass this limitation. When the shell starts up, the generated `reshell.sh` script is sourced directly in the current terminal context, allowing aliases, exports, and functions (such as a custom `mkcd`) to operate natively on the parent shell.
+
+## Auto-Discovery & Import Parser
+
+During setup or migration, `reshell` can automatically discover and import configurations from existing shell configuration files (such as `.bashrc`, `.zshrc`, `.profile`, `.bash_aliases`, and `config.fish`), VS Code user snippets, and Pet snippet manager configurations.
+
+1. **Auto-Discovery**:
+   - Parses aliases and environment variables using regular expressions.
+   - Parses custom functions using a brace-balancing state machine (or Fish block-nesting counter) to extract the function body.
+   - Parses VS Code user snippets (`~/.config/Code/User/snippets/*.json` or workspace `*.code-snippets`) and Pet snippet TOML files (`pet.toml`, `snippet.toml`).
+
+2. **Interactive Conflict Resolution & Deduplication**:
+   - Identical items are automatically deduplicated.
+   - If a parsed item differs from the current active configuration, `reshell` prompts the user interactively to keep the current value, override it, keep both (by renaming), or skip it.
+
+3. **Secrets Detection**:
+   - Identifies potential secrets (e.g., tokens, passwords, keys) using name and value heuristics.
+   - Flagged variables are skipped by default. The CLI warns the user that while `reshell`'s Git history is purely local and not pushed to any remote by default, plaintext storage is still discouraged.
+
+4. **Target Profile**:
+   - Imports can be directed to a specific isolated configuration profile, creating the profile automatically if it does not exist.
