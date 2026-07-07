@@ -375,7 +375,7 @@ func init() {
 				fmt.Printf(" - %d library scripts\n", scriptsCount)
 
 				fmt.Println("\nWARNING: Installing third-party configuration packs merges them directly into your local environment and copies scripts/functions that will run on your machine.")
-				fmt.Print("Do you want to proceed with the installation? (y/N): ")
+				fmt.Print("Do you trust this repository and want to proceed with the installation? (y/N): ")
 				var response string
 				fmt.Scanln(&response)
 				response = strings.ToLower(strings.TrimSpace(response))
@@ -416,7 +416,7 @@ func init() {
 
 			// Determine if sudo elevation is needed
 			needsSudo := manager == "apt" || manager == "dnf" || manager == "pacman"
-			sudoPassword := ""
+			var sudoPassword []byte
 			if needsSudo {
 				// Check if sudo credentials are cached
 				sudoCached := false
@@ -432,7 +432,12 @@ func init() {
 						return fmt.Errorf("failed to read password: %w", err)
 					}
 					fmt.Println()
-					sudoPassword = string(pwBytes)
+					sudoPassword = pwBytes
+					defer func() {
+						for i := range sudoPassword {
+							sudoPassword[i] = 0
+						}
+					}()
 				} else {
 					fmt.Println("reshell: Cached sudo credentials detected. Bypassing password prompt.")
 				}
@@ -453,7 +458,14 @@ func init() {
 					}
 				}()
 
-				err := packages.Install(pkg, manager, sudoPassword, stdoutChan)
+				// Pass copy of password to avoid data corruption or early deletion
+				var sudoPasswordCopy []byte
+				if len(sudoPassword) > 0 {
+					sudoPasswordCopy = make([]byte, len(sudoPassword))
+					copy(sudoPasswordCopy, sudoPassword)
+				}
+
+				err := packages.Install(pkg, manager, sudoPasswordCopy, stdoutChan)
 				if err != nil {
 					fmt.Printf("FAILED: %v\n", err)
 				} else {
@@ -581,6 +593,22 @@ func init() {
 		Aliases: []string{"bootstrap", "install-self"},
 		Short:   "Install reshell binary globally and bootstrap shell configurations",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if os.Getenv("OS") == "Windows_NT" {
+				termEnv := os.Getenv("TERM")
+				shellEnv := os.Getenv("SHELL")
+				if termEnv == "" || (!strings.Contains(shellEnv, "bash") && !strings.Contains(shellEnv, "zsh") && !strings.Contains(shellEnv, "fish")) {
+					fmt.Println("reshell: Warning: Windows command prompt (cmd.exe) and PowerShell are not natively supported.")
+					fmt.Println("Please run reshell setup inside a Unix-compatible environment (such as WSL, Git Bash, or Cygwin).")
+					fmt.Print("Do you want to continue anyway? (y/N): ")
+					var response string
+					fmt.Scanln(&response)
+					response = strings.ToLower(strings.TrimSpace(response))
+					if response != "y" && response != "yes" {
+						return fmt.Errorf("setup aborted: unsupported Windows shell environment")
+					}
+				}
+			}
+
 			home, err := os.UserHomeDir()
 			if err != nil {
 				return err

@@ -92,25 +92,33 @@ func IsInstalled(pkgName string) bool {
 }
 
 // Install runs the OS package installer asynchronously, writing console feedback to stdoutChan.
-func Install(pkgName, manager, sudoPassword string, stdoutChan chan<- string) error {
+func Install(pkgName, manager string, sudoPassword []byte, stdoutChan chan<- string) error {
+	if len(sudoPassword) > 0 {
+		defer func() {
+			for i := range sudoPassword {
+				sudoPassword[i] = 0
+			}
+		}()
+	}
+
 	var cmd *exec.Cmd
 
 	// Setup manager commands
 	switch manager {
 	case "apt":
-		if sudoPassword != "" {
+		if len(sudoPassword) > 0 {
 			cmd = exec.Command("sudo", "-S", "apt-get", "install", "-y", pkgName)
 		} else {
 			cmd = exec.Command("apt-get", "install", "-y", pkgName)
 		}
 	case "dnf":
-		if sudoPassword != "" {
+		if len(sudoPassword) > 0 {
 			cmd = exec.Command("sudo", "-S", "dnf", "install", "-y", pkgName)
 		} else {
 			cmd = exec.Command("dnf", "install", "-y", pkgName)
 		}
 	case "pacman":
-		if sudoPassword != "" {
+		if len(sudoPassword) > 0 {
 			cmd = exec.Command("sudo", "-S", "pacman", "-S", "--noconfirm", pkgName)
 		} else {
 			cmd = exec.Command("pacman", "-S", "--noconfirm", pkgName)
@@ -127,7 +135,7 @@ func Install(pkgName, manager, sudoPassword string, stdoutChan chan<- string) er
 
 	// Set up stdin piping for sudo
 	var stdinPipe io.WriteCloser
-	if sudoPassword != "" && (manager == "apt" || manager == "dnf" || manager == "pacman") {
+	if len(sudoPassword) > 0 && (manager == "apt" || manager == "dnf" || manager == "pacman") {
 		var err error
 		stdinPipe, err = cmd.StdinPipe()
 		if err != nil {
@@ -150,7 +158,8 @@ func Install(pkgName, manager, sudoPassword string, stdoutChan chan<- string) er
 
 	// Feed sudo password if piped
 	if stdinPipe != nil {
-		_, _ = io.WriteString(stdinPipe, sudoPassword+"\n")
+		_, _ = stdinPipe.Write(sudoPassword)
+		_, _ = stdinPipe.Write([]byte("\n"))
 		stdinPipe.Close()
 	}
 
@@ -185,24 +194,32 @@ func Install(pkgName, manager, sudoPassword string, stdoutChan chan<- string) er
 }
 
 // Uninstall runs the OS package uninstaller asynchronously, writing console feedback to stdoutChan.
-func Uninstall(pkgName, manager, sudoPassword string, stdoutChan chan<- string) error {
+func Uninstall(pkgName, manager string, sudoPassword []byte, stdoutChan chan<- string) error {
+	if len(sudoPassword) > 0 {
+		defer func() {
+			for i := range sudoPassword {
+				sudoPassword[i] = 0
+			}
+		}()
+	}
+
 	var cmd *exec.Cmd
 
 	switch manager {
 	case "apt":
-		if sudoPassword != "" {
+		if len(sudoPassword) > 0 {
 			cmd = exec.Command("sudo", "-S", "apt-get", "remove", "-y", pkgName)
 		} else {
 			cmd = exec.Command("apt-get", "remove", "-y", pkgName)
 		}
 	case "dnf":
-		if sudoPassword != "" {
+		if len(sudoPassword) > 0 {
 			cmd = exec.Command("sudo", "-S", "dnf", "remove", "-y", pkgName)
 		} else {
 			cmd = exec.Command("dnf", "remove", "-y", pkgName)
 		}
 	case "pacman":
-		if sudoPassword != "" {
+		if len(sudoPassword) > 0 {
 			cmd = exec.Command("sudo", "-S", "pacman", "-R", "--noconfirm", pkgName)
 		} else {
 			cmd = exec.Command("pacman", "-R", "--noconfirm", pkgName)
@@ -219,7 +236,7 @@ func Uninstall(pkgName, manager, sudoPassword string, stdoutChan chan<- string) 
 
 	// Set up stdin piping for sudo
 	var stdinPipe io.WriteCloser
-	if sudoPassword != "" && (manager == "apt" || manager == "dnf" || manager == "pacman") {
+	if len(sudoPassword) > 0 && (manager == "apt" || manager == "dnf" || manager == "pacman") {
 		var err error
 		stdinPipe, err = cmd.StdinPipe()
 		if err != nil {
@@ -242,7 +259,8 @@ func Uninstall(pkgName, manager, sudoPassword string, stdoutChan chan<- string) 
 
 	// Feed sudo password if piped
 	if stdinPipe != nil {
-		_, _ = io.WriteString(stdinPipe, sudoPassword+"\n")
+		_, _ = stdinPipe.Write(sudoPassword)
+		_, _ = stdinPipe.Write([]byte("\n"))
 		stdinPipe.Close()
 	}
 

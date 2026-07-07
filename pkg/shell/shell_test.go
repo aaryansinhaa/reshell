@@ -58,10 +58,10 @@ func TestShellCompiler(t *testing.T) {
 	}
 	scriptContent := string(data)
 
-	if !strings.Contains(scriptContent, `export COMPILER_VAR="comp_val"`) {
+	if !strings.Contains(scriptContent, `export COMPILER_VAR='comp_val'`) {
 		t.Errorf("compiled script missing env var export, got: %s", scriptContent)
 	}
-	if !strings.Contains(scriptContent, `alias compal="echo 123"`) {
+	if !strings.Contains(scriptContent, `alias compal='echo 123'`) {
 		t.Errorf("compiled script missing alias definition, got: %s", scriptContent)
 	}
 
@@ -96,5 +96,90 @@ func TestShellCompiler(t *testing.T) {
 	}
 	if strings.Contains(cleanedContent, "reshell initialize") {
 		t.Errorf(".bashrc has remaining hooks after Clean(): %s", cleanedContent)
+	}
+}
+
+func TestEscapeSingleQuotes(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		shellName string
+		expected  string
+	}{
+		{"Simple bash", "hello'world", "bash", "hello'\\''world"},
+		{"Simple fish", "hello'world", "fish", "hello\\'world"},
+		{"No quotes bash", "hello-world", "bash", "hello-world"},
+		{"No quotes fish", "hello-world", "fish", "hello-world"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := escapeSingleQuotes(tt.input, tt.shellName)
+			if got != tt.expected {
+				t.Errorf("escapeSingleQuotes(%q, %q) = %q, want %q", tt.input, tt.shellName, got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestIsValidFunctionScript(t *testing.T) {
+	tests := []struct {
+		name      string
+		funcName  string
+		code      string
+		ext       string
+		wantValid bool
+	}{
+		{
+			"Valid bash function",
+			"my_func",
+			"my_func() {\n  echo \"hello\"\n}",
+			".sh",
+			true,
+		},
+		{
+			"Valid fish function",
+			"my_func",
+			"function my_func\n  echo \"hello\"\nend",
+			".fish",
+			true,
+		},
+		{
+			"Executable statement before block",
+			"my_func",
+			"echo \"hacked\"\nmy_func() {\n  echo \"hello\"\n}",
+			".sh",
+			false,
+		},
+		{
+			"Executable statement after block",
+			"my_func",
+			"my_func() {\n  echo \"hello\"\n}\ntouch /tmp/file",
+			".sh",
+			false,
+		},
+		{
+			"Empty code",
+			"my_func",
+			"",
+			".sh",
+			true,
+		},
+		{
+			"Only comments",
+			"my_func",
+			"# this is a comment",
+			".sh",
+			false, // block start not seen
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isValidFunctionScript(tt.funcName, tt.code, tt.ext)
+			if got != tt.wantValid {
+				t.Errorf("isValidFunctionScript(%q, %q, %q) = %v, want %v", tt.funcName, tt.code, tt.ext, got, tt.wantValid)
+			}
+		})
 	}
 }

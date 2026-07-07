@@ -69,8 +69,38 @@ func FetchManifest(repoURL string) (*MarketplaceManifest, string, error) {
 
 // MergeManifest merges the configuration, functions, and scripts from the cloned repository.
 func MergeManifest(manifest *MarketplaceManifest, tempDir string) error {
-	// 3. Merge environment variables
+	// 3. Merge environment variables with secret checks
 	for _, v := range manifest.Variables {
+		if config.IsSecret(v.Name, v.Value) {
+			if config.IsTUI {
+				// Skip silently in TUI to avoid blocking Bubble Tea interactive loop
+				continue
+			}
+			fmt.Printf("\n[WARNING] Potential secret detected in marketplace pack environment variable %q:\n", v.Name)
+			fmt.Println("  (Note: Plaintext storage in env.toml is discouraged.)")
+			fmt.Println("  1) Skip importing [Recommended]")
+			fmt.Println("  2) Import in plaintext anyway")
+			var choice int
+			for {
+				fmt.Print("Select choice (1-2): ")
+				_, scanErr := fmt.Scanln(&choice)
+				if scanErr == nil && (choice == 1 || choice == 2) {
+					break
+				}
+				if scanErr != nil {
+					if scanErr.Error() == "EOF" {
+						choice = 1
+						break
+					}
+					var discard string
+					_, _ = fmt.Scanln(&discard)
+				}
+				fmt.Println("Invalid choice. Enter 1 or 2.")
+			}
+			if choice == 1 {
+				continue
+			}
+		}
 		if err := env.AddOrUpdate(v.Name, v.Value, v.Description, v.Enabled); err != nil {
 			return fmt.Errorf("failed to merge env var '%s': %w", v.Name, err)
 		}
@@ -120,7 +150,11 @@ func MergeManifest(manifest *MarketplaceManifest, tempDir string) error {
 				data, err := os.ReadFile(filepath.Join(funcsSourceDir, file.Name()))
 				if err == nil {
 					nameWithoutExt := filepath.Base(file.Name())
-					nameWithoutExt = nameWithoutExt[:len(nameWithoutExt)-len(filepath.Ext(nameWithoutExt))]
+					ext := filepath.Ext(nameWithoutExt)
+					nameWithoutExt = nameWithoutExt[:len(nameWithoutExt)-len(ext)]
+					if !config.IsValidName(nameWithoutExt) {
+						return fmt.Errorf("security error: invalid custom function name: %q", nameWithoutExt)
+					}
 					_ = functions.CreateOrUpdate(nameWithoutExt, string(data))
 				}
 			}
@@ -137,7 +171,10 @@ func MergeManifest(manifest *MarketplaceManifest, tempDir string) error {
 			if info.IsDir() {
 				return nil
 			}
-			rel, _ := filepath.Rel(scriptsSourceDir, path)
+			rel, errRel := filepath.Rel(scriptsSourceDir, path)
+			if errRel != nil || strings.Contains(rel, "..") {
+				return fmt.Errorf("security error: path traversal detected: %s", rel)
+			}
 			category := filepath.Dir(rel)
 			if category == "." {
 				category = "marketplace"
@@ -146,15 +183,31 @@ func MergeManifest(manifest *MarketplaceManifest, tempDir string) error {
 			if filepath.Ext(name) == ".sh" {
 				name = name[:len(name)-len(".sh")]
 			}
+			if !config.IsValidName(name) {
+				return fmt.Errorf("security error: invalid script name: %q", name)
+			}
 			data, err := os.ReadFile(path)
 			if err == nil {
-				scriptsDir, _ := config.GetScriptsDir()
-				catDir := filepath.Join(scriptsDir, category)
-				_ = os.MkdirAll(catDir, 0755)
-				_ = os.WriteFile(filepath.Join(catDir, info.Name()), data, 0755)
+				scriptsDir, errScripts := config.GetScriptsDir()
+				if errScripts != nil {
+					return errScripts
+				}
+				catDir, errCat := config.SafeJoin(scriptsDir, category)
+				if errCat != nil {
+					return errCat
+				}
+				_ = os.MkdirAll(catDir, 0700)
+				scriptPath, errScriptPath := config.SafeJoin(catDir, info.Name())
+				if errScriptPath != nil {
+					return errScriptPath
+				}
+				_ = os.WriteFile(scriptPath, data, 0700)
 			}
 			return nil
 		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

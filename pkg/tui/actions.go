@@ -270,9 +270,15 @@ func (m *model) executeSelected() tea.Cmd {
 			return nil
 		}
 		selected := m.workflowsData[m.selectedIdx]
-		m.runningWorkflow = &selected
-		m.wfStepsStatus = make([]workflows.StepStatus, len(selected.Steps))
-		for i, s := range selected.Steps {
+		wfCopy := new(config.Workflow)
+		wfCopy.Name = selected.Name
+		wfCopy.Description = selected.Description
+		wfCopy.Steps = make([]config.WorkflowStep, len(selected.Steps))
+		copy(wfCopy.Steps, selected.Steps)
+
+		m.runningWorkflow = wfCopy
+		m.wfStepsStatus = make([]workflows.StepStatus, len(wfCopy.Steps))
+		for i, s := range wfCopy.Steps {
 			m.wfStepsStatus[i] = workflows.StepStatus{
 				Index:    i,
 				Command:  s.Command,
@@ -281,7 +287,7 @@ func (m *model) executeSelected() tea.Cmd {
 		}
 
 		m.wfStepChan = make(chan workflows.StepStatus)
-		go workflows.Run(&selected, m.wfStepChan)
+		go workflows.Run(wfCopy, m.wfStepChan)
 
 		return m.listenWorkflowSteps()
 	}
@@ -312,16 +318,41 @@ func (m *model) runSynchronizedInstaller() tea.Cmd {
 	_, manager := packages.DetectOS()
 	m.pkgInstallChan = make(chan string)
 
+	// Localize state to avoid concurrency data races
+	pkgsCopy := make([]string, len(m.packagesData))
+	copy(pkgsCopy, m.packagesData)
+
+	var sudoPasswordCopy []byte
+	if len(m.sudoPassword) > 0 {
+		sudoPasswordCopy = make([]byte, len(m.sudoPassword))
+		copy(sudoPasswordCopy, m.sudoPassword)
+	}
+
 	go func() {
 		defer close(m.pkgInstallChan)
-		for _, pkg := range m.packagesData {
+		if len(sudoPasswordCopy) > 0 {
+			defer func() {
+				for i := range sudoPasswordCopy {
+					sudoPasswordCopy[i] = 0
+				}
+			}()
+		}
+
+		for _, pkg := range pkgsCopy {
 			if packages.IsInstalled(pkg) {
 				m.pkgInstallChan <- fmt.Sprintf("[%s] Already installed.\n", pkg)
 				continue
 			}
 
 			m.pkgInstallChan <- fmt.Sprintf("[%s] Starting installation...\n", pkg)
-			err := packages.Install(pkg, manager, m.sudoPassword, m.pkgInstallChan)
+
+			var pkgSudoPassword []byte
+			if len(sudoPasswordCopy) > 0 {
+				pkgSudoPassword = make([]byte, len(sudoPasswordCopy))
+				copy(pkgSudoPassword, sudoPasswordCopy)
+			}
+
+			err := packages.Install(pkg, manager, pkgSudoPassword, m.pkgInstallChan)
 			if err != nil {
 				m.pkgInstallChan <- fmt.Sprintf("[%s] FAILED: %v\n", pkg, err)
 			} else {
@@ -341,10 +372,17 @@ func (m *model) runSystemUninstaller() tea.Cmd {
 	pkg := m.packagesData[m.selectedIdx]
 	m.pkgInstallChan = make(chan string)
 
+	var sudoPasswordCopy []byte
+	if len(m.sudoPassword) > 0 {
+		sudoPasswordCopy = make([]byte, len(m.sudoPassword))
+		copy(sudoPasswordCopy, m.sudoPassword)
+	}
+
 	go func() {
 		defer close(m.pkgInstallChan)
 		m.pkgInstallChan <- fmt.Sprintf("[%s] Starting uninstallation...\n", pkg)
-		err := packages.Uninstall(pkg, manager, m.sudoPassword, m.pkgInstallChan)
+
+		err := packages.Uninstall(pkg, manager, sudoPasswordCopy, m.pkgInstallChan)
 		if err != nil {
 			m.pkgInstallChan <- fmt.Sprintf("[%s] FAILED: %v\n", pkg, err)
 		} else {
@@ -585,9 +623,15 @@ func (m *model) executeSearchResult() tea.Cmd {
 
 	case "Workflow":
 		wfObj := m.workflowsData[selected.OriginalIdx]
-		m.runningWorkflow = &wfObj
-		m.wfStepsStatus = make([]workflows.StepStatus, len(wfObj.Steps))
-		for i, s := range wfObj.Steps {
+		wfCopy := new(config.Workflow)
+		wfCopy.Name = wfObj.Name
+		wfCopy.Description = wfObj.Description
+		wfCopy.Steps = make([]config.WorkflowStep, len(wfObj.Steps))
+		copy(wfCopy.Steps, wfObj.Steps)
+
+		m.runningWorkflow = wfCopy
+		m.wfStepsStatus = make([]workflows.StepStatus, len(wfCopy.Steps))
+		for i, s := range wfCopy.Steps {
 			m.wfStepsStatus[i] = workflows.StepStatus{
 				Index:    i,
 				Command:  s.Command,
@@ -596,7 +640,7 @@ func (m *model) executeSearchResult() tea.Cmd {
 		}
 
 		m.wfStepChan = make(chan workflows.StepStatus)
-		go workflows.Run(&wfObj, m.wfStepChan)
+		go workflows.Run(wfCopy, m.wfStepChan)
 
 		m.activeTab = TabWorkflows
 		return m.listenWorkflowSteps()

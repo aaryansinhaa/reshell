@@ -545,14 +545,16 @@ fi`,
 			_ = snippets.AddOrUpdate(name, code, desc, tags, lang, favorite)
 		}
 	case "sudo":
-		m.sudoPassword = m.formInputs[0].Value()
+		m.sudoPassword = []byte(m.formInputs[0].Value())
+		m.formInputs[0].SetValue("")
 		m.viewingLogs = true
 		m.installLogs = "Starting Synchronized package installer...\n"
 		m.viewport.SetContent(m.installLogs)
 		return m.runSynchronizedInstaller()
 
 	case "sudo_uninstall":
-		m.sudoPassword = m.formInputs[0].Value()
+		m.sudoPassword = []byte(m.formInputs[0].Value())
+		m.formInputs[0].SetValue("")
 		m.viewingLogs = true
 		m.installLogs = "Starting system package uninstaller...\n"
 		m.viewport.SetContent(m.installLogs)

@@ -9,6 +9,9 @@ import (
 	"reshell/pkg/git"
 )
 
+// IsTUI is set to true at startup if Reshell is launched in interactive TUI mode.
+var IsTUI bool = false
+
 // Config represents the global reshell configuration.
 type Config struct {
 	Packages    []string `toml:"packages"`
@@ -116,7 +119,7 @@ func EnsureDirectories() error {
 
 	for _, sub := range subdirs {
 		path := filepath.Join(dir, sub)
-		if err := os.MkdirAll(path, 0755); err != nil {
+		if err := os.MkdirAll(path, 0700); err != nil {
 			return err
 		}
 	}
@@ -164,7 +167,7 @@ func SaveTOMLFile(filename string, v interface{}) error {
 		return err
 	}
 
-	if err := os.WriteFile(filePath, data, 0644); err != nil {
+	if err := os.WriteFile(filePath, data, 0600); err != nil {
 		return err
 	}
 
