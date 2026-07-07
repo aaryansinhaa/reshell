@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- fixed pass expansion issues ([#15](https://github.com/aaryansinhaa/reshell/issues/15))
 - favourite and tag issues and other minor issues in the snippets tab ([#6](https://github.com/aaryansinhaa/reshell/issues/6))
 - Formatting issues in the `docs/` files ([#7](https://github.com/aaryansinhaa/reshell/issues/7))
 - Preview window formatting issues ([9696b83](https://github.com/aaryansinhaa/reshell/commit/9696b83))

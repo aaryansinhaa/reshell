@@ -183,3 +183,33 @@ func TestIsValidFunctionScript(t *testing.T) {
 		})
 	}
 }
+
+func TestEscapeDoubleQuotes(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		shellName string
+		expected  string
+	}{
+		{"Simple var bash", "/path/to/bin:$PATH", "bash", `/path/to/bin:$PATH`},
+		{"Multiple vars bash", "$HOME/.cargo/bin:$PATH", "bash", `$HOME/.cargo/bin:$PATH`},
+		{"Curly braces var bash", "${VAR}_suffix", "bash", `${VAR}_suffix`},
+		{"Fish normalization of curly", "${VAR}_suffix", "fish", `$VAR_suffix`},
+		{"Command injection sub bash", "$(malicious)", "bash", `\$(malicious)`},
+		{"Command injection backticks bash", "`malicious`", "bash", `\` + "`" + `malicious\` + "`"},
+		{"Command injection arithmetic bash", "$((1+1))", "bash", `\$((1+1))`},
+		{"Double quote escape bash", `hello"world`, "bash", `hello\"world`},
+		{"Backslash escape bash", `hello\world`, "bash", `hello\\world`},
+		{"Literal dollar sign bash", "$100", "bash", `\$100`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := escapeDoubleQuotes(tt.input, tt.shellName)
+			if got != tt.expected {
+				t.Errorf("escapeDoubleQuotes(%q, %q) = %q, want %q", tt.input, tt.shellName, got, tt.expected)
+			}
+		})
+	}
+}
+
