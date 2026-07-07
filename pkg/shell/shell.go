@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"reshell/pkg/config"
 	"strings"
 )
@@ -80,12 +81,21 @@ func Apply() error {
 		if !envVar.Enabled {
 			continue
 		}
-		escapedVal := escapeSingleQuotes(envVar.Value, shellName)
-		if shellName == "fish" {
-			scriptBuilder.WriteString(fmt.Sprintf("set -gx %s '%s'\n", envVar.Name, escapedVal))
+		if strings.Contains(envVar.Value, "$") {
+			escapedVal := escapeDoubleQuotes(envVar.Value, shellName)
+			if shellName == "fish" {
+				scriptBuilder.WriteString(fmt.Sprintf("set -gx %s \"%s\"\n", envVar.Name, escapedVal))
+			} else {
+				scriptBuilder.WriteString(fmt.Sprintf("export %s=\"%s\"\n", envVar.Name, escapedVal))
+			}
 		} else {
-			// bash & zsh
-			scriptBuilder.WriteString(fmt.Sprintf("export %s='%s'\n", envVar.Name, escapedVal))
+			escapedVal := escapeSingleQuotes(envVar.Value, shellName)
+			if shellName == "fish" {
+				scriptBuilder.WriteString(fmt.Sprintf("set -gx %s '%s'\n", envVar.Name, escapedVal))
+			} else {
+				// bash & zsh
+				scriptBuilder.WriteString(fmt.Sprintf("export %s='%s'\n", envVar.Name, escapedVal))
+			}
 		}
 	}
 	scriptBuilder.WriteString("\n")
@@ -378,3 +388,43 @@ func isValidFunctionScript(name, code, ext string) bool {
 
 	return blockStartSeen
 }
+
+var varRegex = regexp.MustCompile(`\$[a-zA-Z_][a-zA-Z0-9_]*|\$\{[a-zA-Z_][a-zA-Z0-9_]*\}`)
+
+func escapeDoubleQuotes(val string, shellName string) string {
+	var sb strings.Builder
+	runes := []rune(val)
+	n := len(runes)
+	for i := 0; i < n; i++ {
+		r := runes[i]
+		switch r {
+		case '\\':
+			sb.WriteString(`\\`)
+		case '"':
+			sb.WriteString(`\"`)
+		case '`':
+			sb.WriteString(`\` + "`")
+		case '$':
+			sub := string(runes[i:])
+			loc := varRegex.FindStringIndex(sub)
+			if loc != nil && loc[0] == 0 {
+				matchedStr := sub[:loc[1]]
+				if shellName == "fish" && strings.HasPrefix(matchedStr, "${") {
+					// Normalize ${VAR} to $VAR for fish compatibility
+					varName := matchedStr[2 : len(matchedStr)-1]
+					sb.WriteString("$" + varName)
+				} else {
+					sb.WriteString(matchedStr)
+				}
+				matchedRunes := []rune(matchedStr)
+				i += len(matchedRunes) - 1
+			} else {
+				sb.WriteString(`\$`)
+			}
+		default:
+			sb.WriteRune(r)
+		}
+	}
+	return sb.String()
+}
+
