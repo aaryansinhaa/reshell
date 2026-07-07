@@ -8,7 +8,7 @@ Installing packages on Linux requires elevation. We chose to prompt the user for
 
 ```
        +------------------+
-       |   User Input     | (Password)
+       |   User Input     | (Password as []byte)
        +--------+---------+
                 | Stdin Write
                 v
@@ -17,12 +17,22 @@ Installing packages on Linux requires elevation. We chose to prompt the user for
   +---------------------------+
 ```
 
-### Flow:
+### Flow & Security:
 1. `DetectOS` queries `/etc/os-release` or binary paths to find the system package manager.
 2. If it is `apt`, `dnf`, or `pacman`, it spawns a subprocess with the `-S` flag (e.g. `sudo -S apt-get install -y <package>`). The `-S` flag directs `sudo` to read the password from standard input.
 3. We establish standard input/output/error pipes:
-   - The password is written directly to the input pipe (`StdinPipe`).
+   - The password is read as a `[]byte` slice and written directly to the input pipe (`StdinPipe`).
+   - Sudo password bytes are immediately zeroed out in memory after execution to prevent lingering credentials in the heap.
    - Output channels stream build messages asynchronously to the viewport window.
+
+---
+
+## SafeJoin Path Traversal Protection
+
+To prevent malicious configuration packages or manifests from writing files outside the configuration directory, reshell uses `SafeJoin`.
+- `SafeJoin(baseDir string, subPath string)` cleans and resolves the absolute target path, verifying that it has `baseDir` as a prefix.
+- Traversal attempts (such as `fn.Name = "../../../.bashrc"`) are blocked and return a security error.
+- Valid names are also verified using a strict regex: `^[a-zA-Z0-9_-]+$`.
 
 ---
 

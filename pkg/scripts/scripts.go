@@ -24,18 +24,31 @@ type Script struct {
 
 // CreateOrUpdate writes the script body under ~/.config/reshell/scripts/<category>/<name>.sh.
 func CreateOrUpdate(category, name, code string) error {
+	if strings.Contains(category, "..") {
+		return fmt.Errorf("security error: category contains invalid characters: %q", category)
+	}
+	if !config.IsValidName(name) {
+		return fmt.Errorf("security error: invalid script name: %q", name)
+	}
+
 	scriptsDir, err := config.GetScriptsDir()
 	if err != nil {
 		return err
 	}
 
-	catDir := filepath.Join(scriptsDir, category)
-	if err := os.MkdirAll(catDir, 0755); err != nil {
+	catDir, err := config.SafeJoin(scriptsDir, category)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(catDir, 0700); err != nil {
 		return err
 	}
 
-	path := filepath.Join(catDir, name+".sh")
-	if err := os.WriteFile(path, []byte(code), 0755); err != nil {
+	path, err := config.SafeJoin(catDir, name+".sh")
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(path, []byte(code), 0700); err != nil {
 		return err
 	}
 
@@ -45,12 +58,27 @@ func CreateOrUpdate(category, name, code string) error {
 
 // Get reads the content of a script.
 func Get(category, name string) (string, error) {
+	if strings.Contains(category, "..") {
+		return "", fmt.Errorf("security error: category contains invalid characters: %q", category)
+	}
+	if !config.IsValidName(name) {
+		return "", fmt.Errorf("security error: invalid script name: %q", name)
+	}
+
 	scriptsDir, err := config.GetScriptsDir()
 	if err != nil {
 		return "", err
 	}
 
-	path := filepath.Join(scriptsDir, category, name+".sh")
+	catDir, err := config.SafeJoin(scriptsDir, category)
+	if err != nil {
+		return "", err
+	}
+
+	path, err := config.SafeJoin(catDir, name+".sh")
+	if err != nil {
+		return "", err
+	}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
@@ -61,17 +89,31 @@ func Get(category, name string) (string, error) {
 
 // Remove deletes the script file and cleans up empty category folder.
 func Remove(category, name string) error {
+	if strings.Contains(category, "..") {
+		return fmt.Errorf("security error: category contains invalid characters: %q", category)
+	}
+	if !config.IsValidName(name) {
+		return fmt.Errorf("security error: invalid script name: %q", name)
+	}
+
 	scriptsDir, err := config.GetScriptsDir()
 	if err != nil {
 		return err
 	}
 
-	path := filepath.Join(scriptsDir, category, name+".sh")
+	catDir, err := config.SafeJoin(scriptsDir, category)
+	if err != nil {
+		return err
+	}
+
+	path, err := config.SafeJoin(catDir, name+".sh")
+	if err != nil {
+		return err
+	}
 	if err := os.Remove(path); err != nil {
 		return err
 	}
 
-	catDir := filepath.Join(scriptsDir, category)
 	files, err := os.ReadDir(catDir)
 	if err == nil && len(files) == 0 {
 		_ = os.Remove(catDir)
@@ -175,12 +217,27 @@ func ParseParameters(code string) []string {
 
 // Execute runs the script using bash and saves output to a log file.
 func Execute(category, name string, args []string) (string, string, int, error) {
+	if strings.Contains(category, "..") {
+		return "", "", -1, fmt.Errorf("security error: category contains invalid characters: %q", category)
+	}
+	if !config.IsValidName(name) {
+		return "", "", -1, fmt.Errorf("security error: invalid script name: %q", name)
+	}
+
 	scriptsDir, err := config.GetScriptsDir()
 	if err != nil {
 		return "", "", -1, err
 	}
 
-	scriptPath := filepath.Join(scriptsDir, category, name+".sh")
+	catDir, err := config.SafeJoin(scriptsDir, category)
+	if err != nil {
+		return "", "", -1, err
+	}
+
+	scriptPath, err := config.SafeJoin(catDir, name+".sh")
+	if err != nil {
+		return "", "", -1, err
+	}
 
 	cmd := exec.Command("bash", append([]string{scriptPath}, args...)...)
 	var stdout, stderr bytes.Buffer

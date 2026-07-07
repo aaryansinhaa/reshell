@@ -112,7 +112,7 @@ type model struct {
 	wfStepsStatus   []workflows.StepStatus
 
 	// Package Installer Sudo Authentication State
-	sudoPassword     string
+	sudoPassword     []byte
 	pkgInstallChan   chan string
 	scriptOutputChan chan string
 	installLogs      string
@@ -266,7 +266,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case packageInstallFinishedMsg:
 		m.pkgInstallChan = nil
-		m.sudoPassword = ""
+		m.sudoPassword = nil
 		m.loadData()
 		m.showStatus("Synchronized installation checks complete.", 3*time.Second)
 
@@ -287,10 +287,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.fetchedTempDir = msg.tempDir
 			m.inputMode = true
 			m.formType = "marketplace_confirm"
-			m.formTitle = fmt.Sprintf("Confirm Install: %s", msg.manifest.Package.Name)
+			m.formTitle = fmt.Sprintf("Confirm Install: %s\n\nWARNING: Installing third-party packs will execute scripts and functions on your machine.\nDo you trust this repository?", msg.manifest.Package.Name)
 			m.formInputs = make([]textinput.Model, 1)
 			m.formInputs[0] = textinput.New()
-			m.formInputs[0].Placeholder = "Type 'yes' to confirm and install, or 'no'/'esc' to cancel"
+			m.formInputs[0].Placeholder = "Type 'yes' if you trust this repo and wish to install, otherwise 'no'/'esc'"
 			m.formInputs[0].Focus()
 		}
 
@@ -500,7 +500,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.activeTab == TabPackages {
 				// Check if sudo credentials are cached
 				if exec.Command("sudo", "-n", "true").Run() == nil {
-					m.sudoPassword = ""
+					m.sudoPassword = nil
 					m.viewingLogs = true
 					m.installLogs = "Starting Synchronized package installer...\n"
 					m.viewport.SetContent(m.installLogs)
@@ -519,7 +519,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if needsSudo {
 					// Check if sudo credentials are cached
 					if exec.Command("sudo", "-n", "true").Run() == nil {
-						m.sudoPassword = ""
+						m.sudoPassword = nil
 						m.viewingLogs = true
 						m.installLogs = "Starting system package uninstaller...\n"
 						m.viewport.SetContent(m.installLogs)
@@ -719,6 +719,7 @@ func (m *model) listenScriptOutput() tea.Cmd {
 }
 
 func Start() error {
+	config.IsTUI = true
 	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	_, err := p.Run()
 	return err

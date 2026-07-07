@@ -76,15 +76,16 @@ func Apply() error {
 
 	// Apply Env Vars
 	scriptBuilder.WriteString("# --- Environment Variables ---\n")
-	for _, env := range envs.Variables {
-		if !env.Enabled {
+	for _, envVar := range envs.Variables {
+		if !envVar.Enabled {
 			continue
 		}
+		escapedVal := escapeSingleQuotes(envVar.Value, shellName)
 		if shellName == "fish" {
-			scriptBuilder.WriteString(fmt.Sprintf("set -gx %s %q\n", env.Name, env.Value))
+			scriptBuilder.WriteString(fmt.Sprintf("set -gx %s '%s'\n", envVar.Name, escapedVal))
 		} else {
 			// bash & zsh
-			scriptBuilder.WriteString(fmt.Sprintf("export %s=%q\n", env.Name, env.Value))
+			scriptBuilder.WriteString(fmt.Sprintf("export %s='%s'\n", envVar.Name, escapedVal))
 		}
 	}
 	scriptBuilder.WriteString("\n")
@@ -95,15 +96,15 @@ func Apply() error {
 		if !alias.Enabled {
 			continue
 		}
-		// Check shell compatibility
 		if alias.Shell != "all" && alias.Shell != shellName {
 			continue
 		}
 
+		escapedVal := escapeSingleQuotes(alias.Value, shellName)
 		if shellName == "fish" {
-			scriptBuilder.WriteString(fmt.Sprintf("alias %s %q\n", alias.Name, alias.Value))
+			scriptBuilder.WriteString(fmt.Sprintf("alias %s '%s'\n", alias.Name, escapedVal))
 		} else {
-			scriptBuilder.WriteString(fmt.Sprintf("alias %s=%q\n", alias.Name, alias.Value))
+			scriptBuilder.WriteString(fmt.Sprintf("alias %s='%s'\n", alias.Name, escapedVal))
 		}
 	}
 	scriptBuilder.WriteString("\n")
@@ -122,11 +123,19 @@ func Apply() error {
 				name := strings.TrimSuffix(file.Name(), ext)
 				fullPath := filepath.Join(funcDir, file.Name())
 
+				// Enforce custom function block validation
+				codeBytes, errRead := os.ReadFile(fullPath)
+				if errRead == nil {
+					if !isValidFunctionScript(name, string(codeBytes), ext) {
+						fmt.Printf("reshell: Warning: skipping custom function '%s' because it contains executable statements outside the function block.\n", name)
+						continue
+					}
+				}
+
 				if shellName == "fish" {
 					if ext == ".fish" {
 						scriptBuilder.WriteString(fmt.Sprintf("source %q\n", fullPath))
 					} else if ext == ".sh" {
-						// Create a fish function wrapper that runs the bash script
 						scriptBuilder.WriteString(fmt.Sprintf("function %s\n    bash %q $argv\nend\n", name, fullPath))
 					}
 				} else {
@@ -281,4 +290,91 @@ func CopyFile(src, dst string) error {
 		return err
 	}
 	return out.Sync()
+}
+
+func escapeSingleQuotes(val string, shellName string) string {
+	if shellName == "fish" {
+		return strings.ReplaceAll(val, "'", `\'`)
+	}
+	return strings.ReplaceAll(val, "'", `'\''`)
+}
+
+func isValidFunctionScript(name, code, ext string) bool {
+	trimmed := strings.TrimSpace(code)
+	if trimmed == "" {
+		return true
+	}
+
+	lines := strings.Split(code, "\n")
+	var insideBlock bool
+	var blockStartSeen bool
+	var blockEndSeen bool
+	var depth int
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		if blockEndSeen {
+			return false
+		}
+
+		if !insideBlock {
+			isStart := false
+			if ext == ".fish" {
+				if strings.HasPrefix(line, "function ") && strings.Contains(line, name) {
+					isStart = true
+					depth = 1
+				}
+			} else {
+				if (strings.HasPrefix(line, "function ") && strings.Contains(line, name)) ||
+					strings.HasPrefix(line, name+"()") ||
+					strings.Contains(line, name+"() {") ||
+					strings.Contains(line, name+"(){") {
+					isStart = true
+					depth = strings.Count(line, "{") - strings.Count(line, "}")
+				}
+			}
+
+			if isStart {
+				insideBlock = true
+				blockStartSeen = true
+				if ext == ".fish" && depth <= 0 {
+					blockEndSeen = true
+					insideBlock = false
+				} else if ext != ".fish" && blockStartSeen && depth <= 0 && strings.Contains(line, "}") {
+					blockEndSeen = true
+					insideBlock = false
+				}
+			} else {
+				return false
+			}
+		} else {
+			if ext == ".fish" {
+				words := strings.Fields(line)
+				for _, w := range words {
+					w = strings.Trim(w, ";()")
+					if w == "end" {
+						depth--
+					} else if w == "function" || w == "if" || w == "for" || w == "while" || w == "switch" || w == "begin" {
+						depth++
+					}
+				}
+				if depth <= 0 {
+					blockEndSeen = true
+					insideBlock = false
+				}
+			} else {
+				depth += strings.Count(line, "{") - strings.Count(line, "}")
+				if depth <= 0 {
+					blockEndSeen = true
+					insideBlock = false
+				}
+			}
+		}
+	}
+
+	return blockStartSeen
 }

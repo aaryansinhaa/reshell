@@ -63,11 +63,11 @@ func SetActiveProfile(name string) error {
 	}
 
 	// Make sure the base config dir exists before writing
-	if err := os.MkdirAll(baseDir, 0755); err != nil {
+	if err := os.MkdirAll(baseDir, 0700); err != nil {
 		return err
 	}
 
-	return os.WriteFile(activeProfileFile, []byte(name), 0644)
+	return os.WriteFile(activeProfileFile, []byte(name), 0600)
 }
 
 // ListProfiles returns a list of all profiles including "default".
@@ -126,7 +126,7 @@ func CreateProfile(name string) error {
 
 	for _, sub := range subdirs {
 		path := filepath.Join(profileDir, sub)
-		if err := os.MkdirAll(path, 0755); err != nil {
+		if err := os.MkdirAll(path, 0700); err != nil {
 			return err
 		}
 	}

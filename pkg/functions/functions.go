@@ -13,6 +13,10 @@ import (
 
 // CreateOrUpdate writes the function script body to functions/ folder.
 func CreateOrUpdate(name, code string) error {
+	if !config.IsValidName(name) {
+		return fmt.Errorf("security error: invalid custom function name: %q", name)
+	}
+
 	funcDir, err := config.GetFunctionsDir()
 	if err != nil {
 		return err
@@ -24,8 +28,12 @@ func CreateOrUpdate(name, code string) error {
 		filename = fmt.Sprintf("%s.fish", name)
 	}
 
-	path := filepath.Join(funcDir, filename)
-	if err := os.WriteFile(path, []byte(code), 0755); err != nil {
+	path, err := config.SafeJoin(funcDir, filename)
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(path, []byte(code), 0600); err != nil {
 		return err
 	}
 
@@ -35,19 +43,29 @@ func CreateOrUpdate(name, code string) error {
 
 // Get reads the function file code contents.
 func Get(name string) (string, string, error) {
+	if !config.IsValidName(name) {
+		return "", "", fmt.Errorf("security error: invalid custom function name: %q", name)
+	}
+
 	funcDir, err := config.GetFunctionsDir()
 	if err != nil {
 		return "", "", err
 	}
 
 	// Try .sh then .fish
-	pathSh := filepath.Join(funcDir, name+".sh")
+	pathSh, err := config.SafeJoin(funcDir, name+".sh")
+	if err != nil {
+		return "", "", err
+	}
 	data, err := os.ReadFile(pathSh)
 	if err == nil {
 		return string(data), ".sh", nil
 	}
 
-	pathFish := filepath.Join(funcDir, name+".fish")
+	pathFish, err := config.SafeJoin(funcDir, name+".fish")
+	if err != nil {
+		return "", "", err
+	}
 	data, err = os.ReadFile(pathFish)
 	if err == nil {
 		return string(data), ".fish", nil
@@ -58,15 +76,25 @@ func Get(name string) (string, string, error) {
 
 // Remove deletes the function script file.
 func Remove(name string) error {
+	if !config.IsValidName(name) {
+		return fmt.Errorf("security error: invalid custom function name: %q", name)
+	}
+
 	funcDir, err := config.GetFunctionsDir()
 	if err != nil {
 		return err
 	}
 
-	pathSh := filepath.Join(funcDir, name+".sh")
+	pathSh, err := config.SafeJoin(funcDir, name+".sh")
+	if err != nil {
+		return err
+	}
 	errSh := os.Remove(pathSh)
 
-	pathFish := filepath.Join(funcDir, name+".fish")
+	pathFish, err := config.SafeJoin(funcDir, name+".fish")
+	if err != nil {
+		return err
+	}
 	errFish := os.Remove(pathFish)
 
 	if errSh != nil && errFish != nil {
@@ -79,6 +107,10 @@ func Remove(name string) error {
 
 // Validate executes a dry-run check on the file to check shell syntax (e.g. bash -n).
 func Validate(name string) (string, error) {
+	if !config.IsValidName(name) {
+		return "", fmt.Errorf("security error: invalid custom function name: %q", name)
+	}
+
 	funcDir, err := config.GetFunctionsDir()
 	if err != nil {
 		return "", err
@@ -87,12 +119,18 @@ func Validate(name string) (string, error) {
 	var path string
 	var shellCmd string
 
-	pathSh := filepath.Join(funcDir, name+".sh")
+	pathSh, err := config.SafeJoin(funcDir, name+".sh")
+	if err != nil {
+		return "", err
+	}
 	if _, err := os.Stat(pathSh); err == nil {
 		path = pathSh
 		shellCmd = "bash"
 	} else {
-		pathFish := filepath.Join(funcDir, name+".fish")
+		pathFish, err := config.SafeJoin(funcDir, name+".fish")
+		if err != nil {
+			return "", err
+		}
 		if _, err := os.Stat(pathFish); err == nil {
 			path = pathFish
 			shellCmd = "fish"

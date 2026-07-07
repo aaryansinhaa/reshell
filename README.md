@@ -20,6 +20,9 @@ Setting up a new machine or server environment often requires hours of copying d
 
 `reshell` automates this process into a single command. By importing pre-configured workspace packs from the marketplace or any Git repository, you can configure aliases, environment variables, custom helper scripts, and system package dependencies instantly.
 
+> [!WARNING]
+> Only import configurations and install marketplace packages from sources you trust. Importing external manifests will execute custom helper functions and scripts on your machine. ReShell enforces a trust verification prompt and performs secret scanning heuristics before importing external manifests.
+
 ### Example: Java Developer Workspace
 
 To install a complete developer environment:
@@ -152,7 +155,7 @@ The setup command:
 
 ## Configuration Architecture
 
-All configurations are stored in your home directory under `~/.config/reshell/`:
+All configurations are stored in your home directory under `~/.config/reshell/` with restricted user-only permissions (`0700` for folders, `0600` for files) to keep your environment credentials private from other local users:
 
 ```text
 ~/.config/reshell/

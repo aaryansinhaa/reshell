@@ -34,10 +34,10 @@ We avoid stateful databases. Everything is stored in human-readable TOML files u
 We use a compiler-injector model to bind configurations to the active terminal:
 
 1. **Generation (`reshell apply`)**:
-   - The Go binary parses `aliases.toml`, `env.toml`, and files in `functions/`.
-   - It formats environment exports (e.g. `export PATH="/opt/bin:$PATH"`) and aliases (e.g. `alias gs="git status"`).
-   - Custom functions (written as `.sh` or `.fish` scripts) are sourced sequentially.
-   - It outputs a compiled setup script to `~/.config/reshell/shell/reshell.sh` (or `reshell.fish` for Fish shell).
+   - The Go binary parses `aliases.toml`, `env.toml`, and custom function scripts under `functions/`.
+   - It formats environment exports (e.g. `export PATH='/opt/bin:$PATH'`) and aliases using single quotes (`'`) instead of double quotes, preventing parameter expansions. Inner single quotes are escaped (`'\''` for bash/zsh, and `\'` for fish).
+   - Custom function scripts are validated to ensure they contain exactly one function block matching the script name, and no executable commands outside that block, preventing malicious startup actions.
+   - It outputs the compiled startup hook to `~/.config/reshell/shell/reshell.sh` (or `reshell.fish` for Fish shell).
 
 2. **Hook Injection**:
    - The installer checks `~/.bashrc`, `~/.zshrc`, or `~/.config/fish/config.fish`.

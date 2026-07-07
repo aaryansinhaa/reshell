@@ -5,7 +5,7 @@ This guide covers requirements, installation, shell profile integration, and imp
 ## Requirements
 
 - **Go**: Version 1.22 or higher.
-- **Operating Systems**: Linux, macOS, or Windows (via PowerShell or Git Bash).
+- **Operating Systems**: Linux, macOS, or Windows (under Unix-compatible environments like WSL, Git Bash, or Cygwin; native CMD/PowerShell are not supported).
 - **Git**: Required for configuration version control and importing marketplace packs.
 
 ---
@@ -88,8 +88,8 @@ To prevent configuration drift, you can export and import your workspace configu
 
 reshell uses a **Last-Write-Wins** conflict resolution policy when merging configurations:
 
-- **Manifest Imports (`reshell import`)**: Overwrites the existing local configurations with the contents of the imported TOML manifest file.
-- **Marketplace Packs (`reshell install`)**: Fetches the configuration pack manifest, presents a summary breakdown of all environment variables, aliases, snippets, custom functions, and library scripts to be installed, warns about running third-party scripts, and prompts for confirmation before merging. Merges are performed item-by-item. If an imported alias, environment variable, or snippet matches an existing local key, the imported value overwrites the local one.
+- **Manifest Imports (`reshell import`)**: Overwrites the existing local configurations with the contents of the imported TOML manifest file. A warning prompt is shown to verify if you trust the source repository before writing custom functions or scripts.
+- **Marketplace Packs (`reshell install`)**: Fetches the configuration pack manifest, presents a summary breakdown of all environment variables, aliases, snippets, custom functions, and library scripts to be installed, warns about running third-party scripts, performs automated secret scanning, and prompts for explicit trust confirmation before merging. Merges are performed item-by-item. If an imported alias, environment variable, or snippet matches an existing local key, the imported value overwrites the local one.
 - **Git Version Control**: Since reshell automatically commits all changes under `~/.config/reshell/`, you can inspect diffs and resolve conflicts or revert undesired overwrites using standard Git command-line tools.
 
 ### Exporting Configurations
