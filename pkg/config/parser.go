@@ -109,6 +109,59 @@ func IsSecret(name, val string) bool {
 	}
 	return false
 }
+func cleanLineForBracesAndKeywords(line string, inSingleQuote, inDoubleQuote *bool) string {
+	var sb strings.Builder
+	runes := []rune(line)
+	n := len(runes)
+	escaped := false
+
+	for i := 0; i < n; i++ {
+		r := runes[i]
+
+		if escaped {
+			escaped = false
+			continue
+		}
+
+		if r == '\\' {
+			escaped = true
+			continue
+		}
+
+		if *inSingleQuote {
+			if r == '\'' {
+				*inSingleQuote = false
+			}
+			continue
+		}
+
+		if *inDoubleQuote {
+			if r == '"' {
+				*inDoubleQuote = false
+			}
+			continue
+		}
+
+		if r == '\'' {
+			*inSingleQuote = true
+			continue
+		}
+
+		if r == '"' {
+			*inDoubleQuote = true
+			continue
+		}
+
+		if r == '#' {
+			// Start of comment, discard the rest of the line
+			break
+		}
+
+		sb.WriteRune(r)
+	}
+
+	return sb.String()
+}
 
 func parseBashFile(filePath string, results *DiscoveryResults) error {
 	file, err := os.Open(filePath)
@@ -122,6 +175,8 @@ func parseBashFile(filePath string, results *DiscoveryResults) error {
 	var funcName string
 	var funcBody []string
 	var braceCount int
+	var inSingleQuote bool
+	var inDoubleQuote bool
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -152,7 +207,10 @@ func parseBashFile(filePath string, results *DiscoveryResults) error {
 				inFunction = true
 				funcName = matches[1]
 				funcBody = []string{line}
-				braceCount = strings.Count(line, "{") - strings.Count(line, "}")
+				inSingleQuote = false
+				inDoubleQuote = false
+				cleaned := cleanLineForBracesAndKeywords(line, &inSingleQuote, &inDoubleQuote)
+				braceCount = strings.Count(cleaned, "{") - strings.Count(cleaned, "}")
 				if braceCount == 0 {
 					results.Functions = append(results.Functions, ParsedFunction{
 						Name:   funcName,
@@ -161,12 +219,15 @@ func parseBashFile(filePath string, results *DiscoveryResults) error {
 						Shell:  "bash",
 					})
 					inFunction = false
+					inSingleQuote = false
+					inDoubleQuote = false
 				}
 				continue
 			}
 		} else {
 			funcBody = append(funcBody, line)
-			braceCount += strings.Count(line, "{") - strings.Count(line, "}")
+			cleaned := cleanLineForBracesAndKeywords(line, &inSingleQuote, &inDoubleQuote)
+			braceCount += strings.Count(cleaned, "{") - strings.Count(cleaned, "}")
 			if braceCount <= 0 {
 				results.Functions = append(results.Functions, ParsedFunction{
 					Name:   funcName,
@@ -175,6 +236,8 @@ func parseBashFile(filePath string, results *DiscoveryResults) error {
 					Shell:  "bash",
 				})
 				inFunction = false
+				inSingleQuote = false
+				inDoubleQuote = false
 			}
 		}
 	}
@@ -206,6 +269,8 @@ func parseFishFile(filePath string, results *DiscoveryResults) error {
 	var funcName string
 	var funcBody []string
 	var depth int
+	var inSingleQuote bool
+	var inDoubleQuote bool
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -245,11 +310,14 @@ func parseFishFile(filePath string, results *DiscoveryResults) error {
 				funcName = matches[1]
 				funcBody = []string{line}
 				depth = 1
+				inSingleQuote = false
+				inDoubleQuote = false
 				continue
 			}
 		} else {
 			funcBody = append(funcBody, line)
-			depth = updateFishDepth(line, depth)
+			cleaned := cleanLineForBracesAndKeywords(line, &inSingleQuote, &inDoubleQuote)
+			depth = updateFishDepth(cleaned, depth)
 			if depth <= 0 {
 				results.Functions = append(results.Functions, ParsedFunction{
 					Name:   funcName,
@@ -258,6 +326,8 @@ func parseFishFile(filePath string, results *DiscoveryResults) error {
 					Shell:  "fish",
 				})
 				inFunction = false
+				inSingleQuote = false
+				inDoubleQuote = false
 			}
 		}
 	}

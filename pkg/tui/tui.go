@@ -16,6 +16,7 @@ import (
 	"reshell/pkg/marketplace"
 	"reshell/pkg/packages"
 	"reshell/pkg/scripts"
+	"reshell/pkg/shell"
 	"reshell/pkg/workflows"
 )
 
@@ -703,8 +704,7 @@ func makeOpaque(s string, width, height int, bg lipgloss.Color) string {
 
 func (m model) applySettings() tea.Cmd {
 	return func() tea.Msg {
-		c := exec.Command("reshell", "apply")
-		err := c.Run()
+		err := shell.Apply()
 		return applyFinishedMsg{err: err}
 	}
 }

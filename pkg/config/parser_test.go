@@ -86,6 +86,15 @@ function myfunc() {
 myfunc2() {
     echo "world"
 }
+
+function complexfunc() {
+    # This is a comment with { brackets }
+    echo "nested { and } inside double quotes"
+    echo 'nested { and } inside single quotes'
+    if true; then
+        echo "inside conditional"
+    fi
+}
 `
 	filePath := filepath.Join(tmpDir, ".bashrc")
 	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
@@ -111,14 +120,17 @@ myfunc2() {
 		t.Errorf("unexpected env var: %+v", results.EnvVars[0])
 	}
 
-	if len(results.Functions) != 2 {
-		t.Errorf("expected 2 functions, got %d", len(results.Functions))
+	if len(results.Functions) != 3 {
+		t.Errorf("expected 3 functions, got %d", len(results.Functions))
 	}
 	if results.Functions[0].Name != "myfunc" || !testingContains(results.Functions[0].Code, `echo "hello"`) {
 		t.Errorf("unexpected function myfunc: %+v", results.Functions[0])
 	}
 	if results.Functions[1].Name != "myfunc2" || !testingContains(results.Functions[1].Code, `echo "world"`) {
 		t.Errorf("unexpected function myfunc2: %+v", results.Functions[1])
+	}
+	if results.Functions[2].Name != "complexfunc" || !testingContains(results.Functions[2].Code, `inside conditional`) {
+		t.Errorf("unexpected function complexfunc: %+v", results.Functions[2])
 	}
 }
 
@@ -137,6 +149,15 @@ setenv ANOTHER_ENV "value2"
 function my_fish_func
     if true
         echo "fish"
+    end
+end
+
+function complex_fish_func
+    # This is a comment with end statement
+    echo "this string has an if and end statement"
+    switch $argv[1]
+        case '*'
+            echo "fallback"
     end
 end
 `
@@ -164,11 +185,14 @@ end
 		t.Errorf("unexpected env var: %+v", results.EnvVars[0])
 	}
 
-	if len(results.Functions) != 1 {
-		t.Errorf("expected 1 function, got %d", len(results.Functions))
+	if len(results.Functions) != 2 {
+		t.Errorf("expected 2 functions, got %d", len(results.Functions))
 	}
 	if results.Functions[0].Name != "my_fish_func" || !testingContains(results.Functions[0].Code, `echo "fish"`) {
 		t.Errorf("unexpected function: %+v", results.Functions[0])
+	}
+	if results.Functions[1].Name != "complex_fish_func" || !testingContains(results.Functions[1].Code, `switch $argv[1]`) {
+		t.Errorf("unexpected complex function: %+v", results.Functions[1])
 	}
 }
 

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added new unit test suite for custom functions package (`pkg/functions`) to improve test coverage. ([#24](https://github.com/aaryansinhaa/reshell/issues/24))
 - Added a demo gif in the readme. ([#17](https://github.com/aaryansinhaa/reshell/issues/17))
 - Auto-discover and import configurations (aliases, environment variables, custom functions, snippets) from local shell profiles, ~/.config, VS Code user snippets, and Pet manager TOML configs during setup ([#1](https://github.com/aaryansinhaa/reshell/issues/1))
 - `changelog` to keep track of the changes in the project ([#2](https://github.com/aaryansinhaa/reshell/issues/2))
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replaced external CLI call to `reshell apply` in the TUI with an in-process invocation of `shell.Apply()`. ([#23](https://github.com/aaryansinhaa/reshell/issues/23))
 - Overhaul of documentation to make it more accessible and less verbose ([6076df0](https://github.com/aaryansinhaa/reshell/commit/6076df0))
 - Add GitHub repository card and Shields.io star badge to docs ([5d2708c](https://github.com/aaryansinhaa/reshell/commit/5d2708c), [8cfe61b](https://github.com/aaryansinhaa/reshell/commit/8cfe61b))
 - CI/CD workflow improvements: only deploy documentation when docs files change ([b4ddcab](https://github.com/aaryansinhaa/reshell/commit/b4ddcab)), modify Go setup and version configuration in Docker publishing ([4342e78](https://github.com/aaryansinhaa/reshell/commit/4342e78), [8b55bc0](https://github.com/aaryansinhaa/reshell/commit/8b55bc0)), add Codecov token to coverage report upload step ([faada9b](https://github.com/aaryansinhaa/reshell/commit/faada9b))
@@ -38,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed auto-discovery configuration parser to ignore braces and shell keywords when they are inside comments or string literals.
 - fixed pass expansion issues ([#15](https://github.com/aaryansinhaa/reshell/issues/15))
 - favourite and tag issues and other minor issues in the snippets tab ([#6](https://github.com/aaryansinhaa/reshell/issues/6))
 - Formatting issues in the `docs/` files ([#7](https://github.com/aaryansinhaa/reshell/issues/7))
