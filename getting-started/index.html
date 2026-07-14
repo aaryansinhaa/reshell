@@ -1,0 +1,1235 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Portable Developer Terminal Manager">
+      
+      
+        <meta name="author" content="aaryansinhaa">
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../snippets-aliases/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Getting Started - reshell</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#getting-started" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="reshell" class="md-header__button md-logo" aria-label="reshell" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m13.78 15.3 6 6 2.11-2.16-6-6zm3.72-5.2c-.39 0-.81-.05-1.14-.19L4.97 21.25l-2.11-2.11 7.41-7.4L8.5 9.96l-.72.7-1.45-1.41v2.86l-.7.7-3.52-3.56.7-.7h2.81l-1.4-1.41 3.56-3.56a2.976 2.976 0 0 1 4.22 0L9.89 5.74l1.41 1.4-.71.71 1.79 1.78 1.82-1.88c-.14-.33-.2-.75-.2-1.12a3.49 3.49 0 0 1 3.5-3.52c.59 0 1.11.14 1.58.42L16.41 6.2l1.5 1.5 2.67-2.67c.28.47.42.97.42 1.6 0 1.92-1.55 3.47-3.5 3.47"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            reshell
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Getting Started
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/aaryansinhaa/reshell" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    aaryansinhaa/reshell
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Welcome
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../snippets-aliases/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Snippets & Aliases
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../functions-scripts/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Functions & Workflows
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../package-marketplace/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Package & Marketplace
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="reshell" class="md-nav__button md-logo" aria-label="reshell" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m13.78 15.3 6 6 2.11-2.16-6-6zm3.72-5.2c-.39 0-.81-.05-1.14-.19L4.97 21.25l-2.11-2.11 7.41-7.4L8.5 9.96l-.72.7-1.45-1.41v2.86l-.7.7-3.52-3.56.7-.7h2.81l-1.4-1.41 3.56-3.56a2.976 2.976 0 0 1 4.22 0L9.89 5.74l1.41 1.4-.71.71 1.79 1.78 1.82-1.88c-.14-.33-.2-.75-.2-1.12a3.49 3.49 0 0 1 3.5-3.52c.59 0 1.11.14 1.58.42L16.41 6.2l1.5 1.5 2.67-2.67c.28.47.42.97.42 1.6 0 1.92-1.55 3.47-3.5 3.47"/></svg>
+
+    </a>
+    reshell
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/aaryansinhaa/reshell" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    aaryansinhaa/reshell
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation &amp; Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation &amp; Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run-via-docker-sandbox-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run via Docker (Sandbox Demo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-from-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build from Source
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#active-shell-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Active Shell Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Active Shell Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#startup-hook-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Startup Hook Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-portability-import-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Portability (Import &amp; Export)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Portability (Import &amp; Export)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conflict-resolution-last-write-wins-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conflict Resolution (Last-Write-Wins Policy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exporting-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exporting Configurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importing-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Importing Configurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#syncing-with-remote-deployments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Syncing with Remote Deployments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dashboard-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dashboard Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dashboard Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keyboard-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyboard Shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-profile-workspaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Profile Workspaces
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi-Profile Workspaces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#managing-profiles-in-tui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Profiles in TUI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-profiles-in-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Profiles in CLI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isolated-version-control-histories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Isolated Version Control Histories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Isolated Version Control Histories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clearing-version-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clearing Version History
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../snippets-aliases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Snippets & Aliases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../functions-scripts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../package-marketplace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package & Marketplace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation &amp; Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation &amp; Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run-via-docker-sandbox-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run via Docker (Sandbox Demo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-from-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build from Source
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#active-shell-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Active Shell Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Active Shell Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#startup-hook-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Startup Hook Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-portability-import-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Portability (Import &amp; Export)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Portability (Import &amp; Export)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conflict-resolution-last-write-wins-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conflict Resolution (Last-Write-Wins Policy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exporting-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exporting Configurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importing-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Importing Configurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#syncing-with-remote-deployments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Syncing with Remote Deployments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dashboard-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dashboard Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dashboard Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keyboard-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyboard Shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-profile-workspaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Profile Workspaces
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi-Profile Workspaces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#managing-profiles-in-tui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Profiles in TUI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-profiles-in-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Profiles in CLI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isolated-version-control-histories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Isolated Version Control Histories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Isolated Version Control Histories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clearing-version-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clearing Version History
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="getting-started">Getting Started</h1>
+<p>This guide covers requirements, installation, shell profile integration, and import/export commands.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li><strong>Go</strong>: Version 1.22 or higher.</li>
+<li><strong>Operating Systems</strong>: Linux, macOS, or Windows (under Unix-compatible environments like WSL, Git Bash, or Cygwin; native CMD/PowerShell are not supported).</li>
+<li><strong>Git</strong>: Required for configuration version control and importing marketplace packs.</li>
+</ul>
+<hr />
+<h2 id="installation-setup">Installation &amp; Setup</h2>
+<h3 id="run-via-docker-sandbox-demo">Run via Docker (Sandbox Demo)</h3>
+<p>For testing or running ReShell in an isolated sandbox without affecting your host system, you can use the pre-built Docker image hosted on GitHub Container Registry:</p>
+<pre><code class="language-bash">docker run -it ghcr.io/aaryansinhaa/reshell:latest
+</code></pre>
+<h3 id="build-from-source">Build from Source</h3>
+<p>Build the binary from the repository root:</p>
+<pre><code class="language-bash">go build -o reshell
+</code></pre>
+<p>Initialize the global configuration, install the binary, inject startup hooks, and auto-discover/import configurations:</p>
+<pre><code class="language-bash">./reshell setup [directory_path]
+</code></pre>
+<p>The <code>setup</code> command:</p>
+<ol>
+<li>Copy-installs the <code>reshell</code> executable into your local user path (<code>~/.local/bin/</code>), registers path variables, and injects shell hook integrations.</li>
+<li>Prompts you for a target profile name (defaults to <code>default</code>). If the profile does not exist, it will be created.</li>
+<li>Auto-discovers and imports configurations:</li>
+<li><strong>Default (No path)</strong>: Automatically scans default home shell profiles (<code>~/.bashrc</code>, <code>~/.zshrc</code>, <code>.profile</code>, <code>.bash_aliases</code>, <code>config.fish</code>), your <code>~/.config</code> folder (excluding cache/tmp/node_modules), global VS Code user snippets, and Pet manager TOML files (<code>pet.toml</code>, <code>snippet.toml</code>).</li>
+<li><strong>Specific Path</strong>: Recursively scans the provided directory path (highly recommended for dotfiles repositories).</li>
+<li>Prompts you interactively if conflicts are found (e.g., if different alias definitions exist in different files). You can choose to override, keep existing, keep both (by renaming), or skip.</li>
+<li>Automatically detects secrets (e.g., tokens, credentials, AWS keys) and skips them by default to protect your plaintext configuration. (Note: Although <code>reshell</code>'s Git history is purely local, skipping secrets keeps your environment safe).</li>
+</ol>
+<hr />
+<h2 id="active-shell-integration">Active Shell Integration</h2>
+<p>reshell compiles your configurations and hooks them into your startup profile. Run:</p>
+<pre><code class="language-bash">reshell apply
+</code></pre>
+<p>This generates shell-specific script outputs and registers startup hooks:</p>
+<ul>
+<li><strong>Zsh</strong>: Adds integration blocks to <code>~/.zshrc</code> and compiles imports to <code>~/.config/reshell/shell/reshell.sh</code>.</li>
+<li><strong>Bash</strong>: Adds integration blocks to <code>~/.bashrc</code> and compiles imports to <code>~/.config/reshell/shell/reshell.sh</code>.</li>
+<li><strong>Fish</strong>: Adds integration blocks to <code>~/.config/fish/config.fish</code> and compiles imports to <code>~/.config/reshell/shell/reshell.fish</code>.</li>
+</ul>
+<h3 id="startup-hook-structure">Startup Hook Structure</h3>
+<p>The injected configuration block in your shell profile:</p>
+<pre><code class="language-bash"># &gt;&gt;&gt; reshell initialize &gt;&gt;&gt;
+if [ -f &quot;$HOME/.config/reshell/shell/reshell.sh&quot; ]; then
+    . &quot;$HOME/.config/reshell/shell/reshell.sh&quot;
+fi
+# &lt;&lt;&lt; reshell initialize &lt;&lt;&lt;
+</code></pre>
+<p>To clean all reshell integration blocks and restore your profile files, run:</p>
+<pre><code class="language-bash">reshell clean
+</code></pre>
+<hr />
+<h2 id="configuration-portability-import-export">Configuration Portability (Import &amp; Export)</h2>
+<p>To prevent configuration drift, you can export and import your workspace configuration as a unified TOML manifest or back up the raw config folder.</p>
+<h3 id="conflict-resolution-last-write-wins-policy">Conflict Resolution (Last-Write-Wins Policy)</h3>
+<p>reshell uses a <strong>Last-Write-Wins</strong> conflict resolution policy when merging configurations:</p>
+<ul>
+<li><strong>Manifest Imports (<code>reshell import</code>)</strong>: Overwrites the existing local configurations with the contents of the imported TOML manifest file. A warning prompt is shown to verify if you trust the source repository before writing custom functions or scripts.</li>
+<li><strong>Marketplace Packs (<code>reshell install</code>)</strong>: Fetches the configuration pack manifest, presents a summary breakdown of all environment variables, aliases, snippets, custom functions, and library scripts to be installed, warns about running third-party scripts, performs automated secret scanning, and prompts for explicit trust confirmation before merging. Merges are performed item-by-item. If an imported alias, environment variable, or snippet matches an existing local key, the imported value overwrites the local one.</li>
+<li><strong>Git Version Control</strong>: Since reshell automatically commits all changes under <code>~/.config/reshell/</code>, you can inspect diffs and resolve conflicts or revert undesired overwrites using standard Git command-line tools.</li>
+</ul>
+<h3 id="exporting-configurations">Exporting Configurations</h3>
+<p>To export environment variables, aliases, snippets, package lists, and workflows into a single TOML manifest:</p>
+<pre><code class="language-bash">reshell export ~/backup-config.toml
+</code></pre>
+<h3 id="importing-configurations">Importing Configurations</h3>
+<p>To import configurations from a manifest and merge them with your current setup:</p>
+<pre><code class="language-bash">reshell import ~/backup-config.toml
+</code></pre>
+<p>Once imported, execute <code>reshell apply</code> to compile and source the new configuration.</p>
+<h3 id="syncing-with-remote-deployments">Syncing with Remote Deployments</h3>
+<p>To automate environment synchronization across multiple machines without manually exporting and importing manifests, use the <code>sync</code> command:</p>
+<pre><code class="language-bash">reshell sync
+</code></pre>
+<ul>
+<li><strong>First-time Run</strong>: The command prompts you to input your remote deployment Git URL (SSH or HTTPS).</li>
+<li><strong>Git Authentication Warning</strong>: Since syncing interacts with a remote Git repository, it may require Git authentication. If authentication fails, the Git error will be output to the terminal.</li>
+<li><strong>Programmatic Merging</strong>: The engine programmatically fetches remote changes and merges them with your local configurations. In case of conflicts (such as different values for the same alias or env variable), you are presented with options to keep local, override, rename, or skip.</li>
+<li><strong>Git Convergence</strong>: Merges are saved locally, committed, and pushed back to the remote repository.</li>
+<li><strong>TUI Synchronization</strong>: You can also trigger this sync directly inside the TUI dashboard by navigating to the <strong>Marketplace</strong> tab and pressing <code>s</code>.</li>
+</ul>
+<hr />
+<h2 id="dashboard-usage">Dashboard Usage</h2>
+<p>To launch the interactive configuration editor, run the binary without any subcommands:</p>
+<pre><code class="language-bash">reshell
+</code></pre>
+<h3 id="keyboard-shortcuts">Keyboard Shortcuts</h3>
+<ul>
+<li><code>Tab</code>: Navigate forward through sidebar tabs.</li>
+<li><code>Shift+Tab</code>: Navigate backward through sidebar tabs.</li>
+<li><code>Up / Down</code> (or <code>k / j</code>): Scroll item lists.</li>
+<li><code>n</code>: Create a new entry (opens input form).</li>
+<li><code>e</code>: Open the selected custom function or script in your default editor (<code>$EDITOR</code>).</li>
+<li><code>d</code>: Delete the selected entry.</li>
+<li><code>Space</code>: Toggle the active state of an environment variable or alias.</li>
+<li><code>c</code>: Copy the selected script snippet to the system clipboard.</li>
+<li><code>x</code>: Execute the selected script or workflow.</li>
+<li><code>h</code> (inside Git tab): Toggle between global git configuration and local repository version history.</li>
+<li><code>r</code> or <code>Enter</code> (inside Git history view): Revert configuration files to the selected revision.</li>
+<li><code>Ctrl+A</code>: Run <code>reshell apply</code> to compile and load configurations.</li>
+<li><code>q</code> or <code>Ctrl+C</code>: Exit the interface.</li>
+</ul>
+<hr />
+<h2 id="multi-profile-workspaces">Multi-Profile Workspaces</h2>
+<p>reshell supports isolated workspaces through <strong>Profiles</strong>. Each profile maintains its own custom aliases, snippets, custom function scripts, scripts library, environment variables, workflows, and package lists.</p>
+<p align="center">
+  <img src="../assets/reshell_profiles.jpg" alt="ReShell Profile Management" width="650">
+</p>
+
+<h3 id="managing-profiles-in-tui">Managing Profiles in TUI</h3>
+<p>Navigate to the <strong>Profiles</strong> tab in the TUI dashboard:</p>
+<ul>
+<li><strong><code>s</code> or <code>Enter</code></strong>: Activates the highlighted profile and automatically compiles and updates your shell hooks (<code>reshell apply</code>).</li>
+<li><strong><code>n</code></strong>: Prompts you for a name to create and switch to a new profile.</li>
+<li><strong><code>d</code></strong>: Deletes the highlighted profile (you cannot delete the active profile).</li>
+</ul>
+<h3 id="managing-profiles-in-cli">Managing Profiles in CLI</h3>
+<p>You can also control profiles directly from the command line:</p>
+<ul>
+<li><strong>List profiles</strong>:
+  <code>bash
+  reshell profile list</code></li>
+<li><strong>Create profile</strong>:
+  <code>bash
+  reshell profile create work</code></li>
+<li><strong>Switch profile</strong>:
+  <code>bash
+  reshell profile switch work</code></li>
+<li><strong>Delete profile</strong>:
+  <code>bash
+  reshell profile delete work</code></li>
+</ul>
+<h3 id="isolated-version-control-histories">Isolated Version Control Histories</h3>
+<p>Each configuration profile maintains its own <strong>completely isolated Git history</strong>:</p>
+<ul>
+<li>Custom profiles store their version histories inside <code>~/.config/reshell/profiles/&lt;name&gt;/.git/</code>.</li>
+<li>The default profile stores its history at the root of <code>~/.config/reshell/.git/</code> and automatically ignores custom profiles to prevent overlap.</li>
+<li>Swapping profiles switches the TUI History panel to show commits specific to that profile only.</li>
+</ul>
+<h4 id="clearing-version-history">Clearing Version History</h4>
+<p>If you want to discard your profile's version control history and start fresh with a clean initial snapshot:</p>
+<ul>
+<li><strong>TUI Dashboard</strong>: Go to the <strong>Git</strong> tab, toggle <strong>History View</strong> (using <code>h</code>), and press <strong><code>c</code></strong>.</li>
+<li><strong>CLI Terminal</strong>: Run the following subcommand:
+  <code>bash
+  reshell git clear</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
